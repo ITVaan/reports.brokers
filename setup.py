@@ -8,7 +8,7 @@ requires = [
     'setuptools',
 ]
 
-test_requires = requires + [
+databridge_test_requires = requires + [
     'webtest',
     'python-coveralls',
     'mock==1.0.1',
@@ -26,27 +26,42 @@ databridge_requires = requires + [
     'openprocurement_client>=1.0b2'
 ]
 
-setup(name='reports.brokers.bridge',
+api_test_requires = requires + [
+
+]
+
+api_requires = requires + [
+
+]
+
+entry_points = {
+    'console_scripts': [
+
+    ]
+}
+
+setup(name='reports.brokers',
       version=version,
       description="",
       long_description=open("README.rst").read(),
       classifiers=[
-        "Framework :: Pylons",
-        "License :: OSI Approved :: Apache Software License",
-        "Programming Language :: Python",
-        "Topic :: Internet :: WWW/HTTP",
-        "Topic :: Internet :: WWW/HTTP :: WSGI :: Application"
-        ],
+          "Framework :: Pylons",
+          "License :: OSI Approved :: Apache Software License",
+          "Programming Language :: Python",
+          "Topic :: Internet :: WWW/HTTP",
+          "Topic :: Internet :: WWW/HTTP :: WSGI :: Application"
+      ],
       keywords="web services",
       author='Quintagroup, Ltd.',
       author_email='info@quintagroup.com',
       license='Apache License 2.0',
-      url='https://github.com/ITVaan/reports.brokers.bridge',
+      url='https://github.com/ITVaan/reports.brokers',
       packages=find_packages(exclude=['ez_setup']),
       include_package_data=True,
       zip_safe=False,
       install_requires=requires,
-      tests_require=test_requires,
       extras_require={'databridge': databridge_requires,
-                      'test': test_requires},
+                      'databridge_test': databridge_test_requires,
+                      'api': api_requires,
+                      'api_test': api_test_requires},
       )

@@ -5,7 +5,7 @@ class APIRateController:
         self.time_between_requests = 0
 
     def decrement(self):
-        self.time_between_requests -= self.decrement_step if self.decrement_step < self.time_between_requests else 0
+        self.time_between_requests -= self.decrement_step if self.decrement_step <= self.time_between_requests else 0
         return self.time_between_requests
 
     def increment(self):

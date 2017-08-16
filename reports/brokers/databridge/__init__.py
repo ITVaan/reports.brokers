@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from reports.brokers.databridge.conf import main
+from reports.brokers.databridge.bridge import main
 
 __all__ = ['main']

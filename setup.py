@@ -36,7 +36,7 @@ api_requires = requires + [
 
 entry_points = {
     'console_scripts': [
-
+        'reports_brokers_bridge = reports.brokers.databridge:main'
     ]
 }
 
@@ -64,4 +64,5 @@ setup(name='reports.brokers',
                       'databridge_test': databridge_test_requires,
                       'api': api_requires,
                       'api_test': api_test_requires},
+      entry_points=entry_points,
       )

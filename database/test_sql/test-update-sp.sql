@@ -887,5 +887,3 @@ CALL sp_update_tender(@json, '2017-08-15T00:00:13.239422+03:00', @errCode, @errD
 # select @errCode;
 select id, original_id, updated_on, @errCode, @errDesc from tenders;
 delete from tenders where original_id = 'aaaaaaaaaaaaaa';
-
-statuses

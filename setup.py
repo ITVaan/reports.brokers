@@ -4,7 +4,6 @@ import os
 version = '1.0'
 
 requires = [
-    'redis',
     'setuptools',
 ]
 
@@ -19,7 +18,6 @@ databridge_test_requires = requires + [
 databridge_requires = requires + [
     'PyYAML',
     'gevent',
-    'redis',
     'LazyDB',
     'ExtendedJournalHandler',
     'requests',

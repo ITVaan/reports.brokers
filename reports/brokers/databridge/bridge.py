@@ -18,10 +18,10 @@ from restkit import RequestError, ResourceError
 from constants import retry_mult
 from openprocurement_client.client import TendersClientSync as BaseTendersClientSync, TendersClient as BaseTendersClient
 from reports.brokers.databridge.scanner import Scanner
+from reports.brokers.databridge.base_integration import BaseIntegration
 from reports.brokers.databridge.utils import journal_context, check_412
 from reports.brokers.databridge.journal_msg_ids import (
     DATABRIDGE_RESTART_WORKER, DATABRIDGE_START, DATABRIDGE_DOC_SERVICE_CONN_ERROR)
-
 from reports.brokers.databridge.sleep_change_value import APIRateController
 
 logger = logging.getLogger(__name__)
@@ -54,10 +54,6 @@ class EdrDataBridge(object):
         self.increment_step = self.config_get('increment_step') or 1
         self.decrement_step = self.config_get('decrement_step') or 1
         self.sleep_change_value = APIRateController(self.increment_step, self.decrement_step)
-        self.doc_service_host = self.config_get('doc_service_server')
-        self.doc_service_port = self.config_get('doc_service_port') or 6555
-        self.sandbox_mode = os.environ.get('SANDBOX_MODE', 'False')
-        self.time_to_live = self.config_get('time_to_live') or 300
 
         # init clients
         self.tenders_sync_client = TendersClientSync('', host_url=ro_api_server, api_version=self.api_version)
@@ -65,11 +61,6 @@ class EdrDataBridge(object):
 
         # init queues for workers
         self.filtered_tender_ids_queue = Queue(maxsize=buffers_size)  # queue of tender IDs with appropriate status
-        self.edrpou_codes_queue = Queue(maxsize=buffers_size)  # queue with edrpou codes (Data objects stored in it)
-        self.upload_to_doc_service_queue = Queue(
-            maxsize=buffers_size)  # queue with detailed info from EDR (Data.file_content)
-        # upload_to_tender_queue - queue with  file's get_url
-        self.upload_to_tender_queue = Queue(maxsize=buffers_size)
 
         # blockers
         self.initialization_event = gevent.event.Event()
@@ -82,6 +73,12 @@ class EdrDataBridge(object):
                                services_not_available=self.services_not_available,
                                sleep_change_value=self.sleep_change_value,
                                delay=self.delay)
+        self.base_integration = partial(BaseIntegration.spawn,
+                                        tenders_sync_client=self.tenders_sync_client,
+                                        filtered_tender_ids_queue=self.filtered_tender_ids_queue,
+                                        services_not_available=self.services_not_available,
+                                        sleep_change_value=self.sleep_change_value,
+                                        delay=self.delay)
 
     def config_get(self, name):
         return self.config.get('main').get(name)
@@ -122,7 +119,8 @@ class EdrDataBridge(object):
             self.set_sleep()
 
     def _start_jobs(self):
-        self.jobs = {'scanner': self.scanner()}
+        self.jobs = {'scanner': self.scanner(),
+                     'base_integration': self.base_integration()}
 
     def launch(self):
         while True:
@@ -139,7 +137,7 @@ class EdrDataBridge(object):
             while True:
                 gevent.sleep(self.delay)
                 self.check_services()
-                if counter == 20:
+                if counter == 5:
                     counter = 0
                     logger.info('Current state: Filtered tenders {}'.format(self.filtered_tender_ids_queue.qsize()))
                 counter += 1

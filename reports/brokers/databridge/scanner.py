@@ -20,10 +20,9 @@ class Scanner(Greenlet):
     """ Edr API Data Bridge """
 
     def __init__(self, tenders_sync_client, filtered_tender_ids_queue, services_not_available,
-                 sleep_change_value, delay=15):
+                 sleep_change_value, delay=2):
         super(Scanner, self).__init__()
         self.exit = False
-        self.start_time = datetime.now()
         self.delay = delay
         # init clients
         self.tenders_sync_client = tenders_sync_client

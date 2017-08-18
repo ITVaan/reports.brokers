@@ -61,7 +61,7 @@ class BaseIntegration(Greenlet):
             else:
                 self.sleep_change_value.decrement()
                 if response.status_int == 200:
-                    tender_json = munchify(loads(response.body_string()))['data']
+                    tender_json = munchify(loads(response.body_string()))
                 logger.info('Get tender {} from filtered_tender_ids_queue'.format(tender_id))
 
                 if not os.path.exists(tenders_subdir):
@@ -77,8 +77,8 @@ class BaseIntegration(Greenlet):
                 regex5 = re.compile(r'\\u0[0-9a-zA-Z]{3}', re.IGNORECASE)
 
                 t = tender_json
-                dtm = dateutil.parser.parse(t['dateModified'])
-                id = t['id']
+                dtm = dateutil.parser.parse(t['data']['dateModified'])
+                id = t['data']['id']
                 subdir = '{0}/{1:04d}-{2:02d}-{3:02d}'.format(tenders_subdir, dtm.year, dtm.month, dtm.day)
                 if not os.path.exists(subdir):
                     os.makedirs(subdir)
@@ -101,7 +101,7 @@ class BaseIntegration(Greenlet):
                     with open(file_path, "r") as text_file:
                         response_json = json.load(text_file)
 
-                tender_data = response_json
+                tender_data = response_json['data']
 
                 if 'enquiryPeriod' in tender_data:
 
@@ -114,7 +114,7 @@ class BaseIntegration(Greenlet):
                     strcut = regex4.sub('', strcut)
                     strcut = regex5.sub('', strcut)
 
-                    res = cursor.callproc('sp_update_tender', (strcut, t['dateModified'], 0, ''))
+                    res = cursor.callproc('sp_update_tender', (strcut, t['data']['dateModified'], 0, ''))
                     if "bids" in tender_data:
                         logger.info("Tender {0} got. Bids count: {1}".format(id, len(tender_data['bids'])))
 

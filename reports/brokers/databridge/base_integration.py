@@ -63,81 +63,73 @@ class BaseIntegration(Greenlet):
                 if response.status_int == 200:
                     tender_json = munchify(loads(response.body_string()))['data']
                 logger.info('Get tender {} from filtered_tender_ids_queue'.format(tender_id))
-            if not os.path.exists(tenders_subdir):
-                os.makedirs(tenders_subdir)
 
-            conn = mariadb.connect(host='127.0.0.1', user='root', password='root', database='reports_data',
-                                   charset='utf8')
+                if not os.path.exists(tenders_subdir):
+                    os.makedirs(tenders_subdir)
 
-            regex1 = re.compile(r'\\"', re.IGNORECASE)
-            regex2 = re.compile(r'"\+\\u0.+?"', re.IGNORECASE)
-            regex3 = re.compile(r'"\\u0.+?"', re.IGNORECASE)
-            regex4 = re.compile(r'\\u0[\\u0-9a-zA-Z]*\\u0[0-9a-zA-Z]{3}', re.IGNORECASE)
-            regex5 = re.compile(r'\\u0[0-9a-zA-Z]{3}', re.IGNORECASE)
+                conn = mariadb.connect(host='localhost', user='root', password='root', database='reports_data',
+                                       charset='utf8')
 
-            t = tender_json
-            logger.info('vot nash tender = {}'.format(t))
-            dtm = dateutil.parser.parse(t['dateModified'])
-            id = t['id']
-            subdir = '{0}/{1:04d}-{2:02d}-{3:02d}'.format(tenders_subdir, dtm.year, dtm.month, dtm.day)
-            if not os.path.exists(subdir):
-                os.makedirs(subdir)
+                regex1 = re.compile(r'\\"', re.IGNORECASE)
+                regex2 = re.compile(r'"\+\\u0.+?"', re.IGNORECASE)
+                regex3 = re.compile(r'"\\u0.+?"', re.IGNORECASE)
+                regex4 = re.compile(r'\\u0[\\u0-9a-zA-Z]*\\u0[0-9a-zA-Z]{3}', re.IGNORECASE)
+                regex5 = re.compile(r'\\u0[0-9a-zA-Z]{3}', re.IGNORECASE)
 
-            file_path = "{0}/{1}.json".format(subdir, id)
-            pretty_file_path = "{0}/{1}_pretty.json".format(subdir, id)
+                t = tender_json
+                dtm = dateutil.parser.parse(t['dateModified'])
+                id = t['id']
+                subdir = '{0}/{1:04d}-{2:02d}-{3:02d}'.format(tenders_subdir, dtm.year, dtm.month, dtm.day)
+                if not os.path.exists(subdir):
+                    os.makedirs(subdir)
 
-            if not os.path.exists(file_path) or not os.path.exists(pretty_file_path):
-                if response.status_code == 200:
-                    response_json = response.json()
+                file_path = "{0}/{1}.json".format(subdir, id)
+                pretty_file_path = "{0}/{1}_pretty.json".format(subdir, id)
 
-                    with open(file_path, "w") as text_file:
-                        json.dump(response_json, text_file, separators=(',', ':'))
+                if not os.path.exists(file_path) or not os.path.exists(pretty_file_path):
+                    if response.status_int == 200:
+                        response_json = t
+                        with open(file_path, "w") as text_file:
+                            json.dump(response_json, text_file, separators=(',', ':'))
 
-                    with open(pretty_file_path, "w") as text_file:
-                        json.dump(response_json, text_file, sort_keys=True, indent=2, separators=(',', ': '))
+                        with open(pretty_file_path, "w") as text_file:
+                            json.dump(response_json, text_file, sort_keys=True, indent=2, separators=(',', ': '))
+                    else:
+                        logger.info(
+                            'Failed to get tender {0}! Error: {1} {2}'.format(id, response.status_code, response.text))
                 else:
-                    print('Failed to get tender {0}! Error: {1} {2}'.format(id, response.status_code, response.text))
-            else:
-                print('Tender {0} already got.'.format(id))
+                    with open(file_path, "r") as text_file:
+                        response_json = json.load(text_file)
 
-                with open(file_path, "r") as text_file:
-                    response_json = json.load(text_file)
+                tender_data = response_json
 
-            tender_data = response_json['data']
+                if 'enquiryPeriod' in tender_data:
 
-            if 'enquiryPeriod' in tender_data:
+                    cursor = conn.cursor(buffered=False)
+                    str = json.dumps(response_json, separators=(',', ':'))
 
-                cursor = conn.cursor(buffered=False)
-                str = json.dumps(response_json, separators=(',', ':'))
+                    strcut = regex1.sub('', str)
+                    strcut = regex2.sub('""', strcut)
+                    strcut = regex3.sub('""', strcut)
+                    strcut = regex4.sub('', strcut)
+                    strcut = regex5.sub('', strcut)
 
-                strcut = regex1.sub('', str)
-                strcut = regex2.sub('""', strcut)
-                strcut = regex3.sub('""', strcut)
-                strcut = regex4.sub('', strcut)
-                strcut = regex5.sub('', strcut)
+                    res = cursor.callproc('sp_update_tender', (strcut, t['dateModified'], 0, ''))
+                    if "bids" in tender_data:
+                        logger.info("Tender {0} got. Bids count: {1}".format(id, len(tender_data['bids'])))
 
-                res = cursor.callproc('sp_update_tender',
-                                      (strcut, t['dateModified'], 0, ''))
-                if res[2] != 0:
-                    print(str)
-                    print(strcut)
-                    print('!!!!  sp_update_tender result for {0}: {1}; {2}'.format(id, res[2], res[3]))
+                        if len(tender_data['bids']) > 0:
+                            for b in tender_data['bids']:
+                                if 'tenderers' in b:
+                                    for tendr in b['tenderers']:
+                                        # logger.info(u'Got tenderer: {0} {1} {2}'.format(tendr['identifier']['id'], tendr['identifier']['scheme'], tendr['identifier']['legalName']))
+                                        # .decode("utf-8")
+                                        pass
+                    else:
+                        logger.info("Tender {0} got without bids. Status: {1}".format(id, tender_data['status']))
 
-                if "bids" in tender_data:
-                    # print("Tender {0} got. Bids count: {1}".format(id, len(tender_data['bids'])))
-
-                    if len(tender_data['bids']) > 0:
-                        for b in tender_data['bids']:
-                            if 'tenderers' in b:
-                                for tendr in b['tenderers']:
-                                    # print(u'Got tenderer: {0} {1} {2}'.format(tendr['identifier']['id'], tendr['identifier']['scheme'], tendr['identifier']['legalName']))
-                                    # .decode("utf-8")
-                                    pass
                 else:
-                    print("Tender {0} got without bids. Status: {1}".format(id, tender_data['status']))
-
-            else:
-                print("Tender {0} has no enquiry period! Status: {1}".format(id, tender_data['status']))
+                    logger.info("Tender {0} has no enquiry period! Status: {1}".format(id, tender_data['status']))
 
     def _start_synchronization_workers(self):
         logger.info('BaseIntegration starting sync workers')

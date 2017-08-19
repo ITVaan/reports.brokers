@@ -5,7 +5,6 @@ import mysql.connector as mariadb
 import gevent
 import logging.config
 import json
-import dateutil.parser
 from gevent.event import Event
 from gevent import Greenlet, spawn
 from munch import munchify
@@ -36,7 +35,6 @@ class BaseIntegration(Greenlet):
         self.services_not_available = services_not_available
 
     def adding_to_db(self):
-        tenders_subdir = 'tenders'
         while True:
             try:
                 tender_id = self.filtered_tender_ids_queue.get()
@@ -64,9 +62,6 @@ class BaseIntegration(Greenlet):
                     tender_json = munchify(loads(response.body_string()))
                 logger.info('Get tender {} from filtered_tender_ids_queue'.format(tender_id))
 
-                if not os.path.exists(tenders_subdir):
-                    os.makedirs(tenders_subdir)
-
                 conn = mariadb.connect(host='localhost', user='root', password='root', database='reports_data',
                                        charset='utf8')
 
@@ -76,37 +71,13 @@ class BaseIntegration(Greenlet):
                 regex4 = re.compile(r'\\u0[\\u0-9a-zA-Z]*\\u0[0-9a-zA-Z]{3}', re.IGNORECASE)
                 regex5 = re.compile(r'\\u0[0-9a-zA-Z]{3}', re.IGNORECASE)
 
-                t = tender_json
-                dtm = dateutil.parser.parse(t['data']['dateModified'])
-                id = t['data']['id']
-                subdir = '{0}/{1:04d}-{2:02d}-{3:02d}'.format(tenders_subdir, dtm.year, dtm.month, dtm.day)
-                if not os.path.exists(subdir):
-                    os.makedirs(subdir)
-
-                file_path = "{0}/{1}.json".format(subdir, id)
-                pretty_file_path = "{0}/{1}_pretty.json".format(subdir, id)
-
-                if not os.path.exists(file_path) or not os.path.exists(pretty_file_path):
-                    if response.status_int == 200:
-                        response_json = t
-                        with open(file_path, "w") as text_file:
-                            json.dump(response_json, text_file, separators=(',', ':'))
-
-                        with open(pretty_file_path, "w") as text_file:
-                            json.dump(response_json, text_file, sort_keys=True, indent=2, separators=(',', ': '))
-                    else:
-                        logger.info(
-                            'Failed to get tender {0}! Error: {1} {2}'.format(id, response.status_code, response.text))
-                else:
-                    with open(file_path, "r") as text_file:
-                        response_json = json.load(text_file)
-
-                tender_data = response_json['data']
+                tender_data = tender_json['data']
+                id = tender_data['id']
 
                 if 'enquiryPeriod' in tender_data:
 
                     cursor = conn.cursor(buffered=False)
-                    str = json.dumps(response_json, separators=(',', ':'))
+                    str = json.dumps(tender_json, separators=(',', ':'))
 
                     strcut = regex1.sub('', str)
                     strcut = regex2.sub('""', strcut)
@@ -114,7 +85,7 @@ class BaseIntegration(Greenlet):
                     strcut = regex4.sub('', strcut)
                     strcut = regex5.sub('', strcut)
 
-                    res = cursor.callproc('sp_update_tender', (strcut, t['data']['dateModified'], 0, ''))
+                    cursor.callproc('sp_update_tender', (strcut, tender_data['dateModified'], 0, ''))
                     if "bids" in tender_data:
                         logger.info("Tender {0} got. Bids count: {1}".format(id, len(tender_data['bids'])))
 
@@ -122,12 +93,9 @@ class BaseIntegration(Greenlet):
                             for b in tender_data['bids']:
                                 if 'tenderers' in b:
                                     for tendr in b['tenderers']:
-                                        # logger.info(u'Got tenderer: {0} {1} {2}'.format(tendr['identifier']['id'], tendr['identifier']['scheme'], tendr['identifier']['legalName']))
-                                        # .decode("utf-8")
                                         pass
                     else:
                         logger.info("Tender {0} got without bids. Status: {1}".format(id, tender_data['status']))
-
                 else:
                     logger.info("Tender {0} has no enquiry period! Status: {1}".format(id, tender_data['status']))
 

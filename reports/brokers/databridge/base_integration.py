@@ -61,7 +61,7 @@ class BaseIntegration(Greenlet):
             else:
                 self.sleep_change_value.decrement()
                 if response.status_int == 200:
-                    tender_json = munchify(loads(response.body_string()))['data']
+                    tender_json = munchify(loads(response.body_string()))
                 logger.info('Get tender {} from filtered_tender_ids_queue'.format(tender_id))
 
                 if not os.path.exists(tenders_subdir):

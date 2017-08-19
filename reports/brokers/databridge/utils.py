@@ -1,20 +1,15 @@
 # -*- coding: utf-8 -*-
-import yaml
-import io
-
 from uuid import uuid4
 from logging import getLogger
 from restkit import ResourceError
 from collections import namedtuple
 
-
 LOGGER = getLogger(__name__)
-
-id_passport_len = 9
 
 
 def item_key(tender_id, item_id):
     return '{}_{}'.format(tender_id, item_id)
+
 
 Data = namedtuple('Data', [
     'tender_id',  # tender ID
@@ -25,10 +20,6 @@ Data = namedtuple('Data', [
 ])
 
 
-def data_string(data):
-    return "tender {} {} id: {}".format(data.tender_id, data.item_name[:-1], data.item_id)
-
-
 def journal_context(record={}, params={}):
     for k, v in params.items():
         record["JOURNAL_" + k] = v
@@ -36,36 +27,11 @@ def journal_context(record={}, params={}):
 
 
 def generate_req_id():
-    return b'edr-api-data-bridge-req-' + str(uuid4()).encode('ascii')
-
-
-def generate_doc_id():
-    return uuid4().hex
-
-
-def validate_param(code):
-    return 'id' if code.isdigit() and len(code) != id_passport_len else 'passport'
-
-
-def create_file(details):
-    """ Return temp file with details """
-    temporary_file = io.BytesIO()
-    temporary_file.write(yaml.safe_dump(details, allow_unicode=True, default_flow_style=False))
-    temporary_file.seek(0)
-
-    return temporary_file
+    return b'data-bridge-req-' + str(uuid4()).encode('ascii')
 
 
 class RetryException(Exception):
     pass
-
-
-def check_add_suffix(list_ids, document_id, number):
-    """Check if EDR API returns list of edr ids with more then 1 element add suffix to document id"""
-    len_list_ids = len(list_ids)
-    if len_list_ids > 1:
-        return '{document_id}.{amount}.{number}'.format(document_id=document_id, amount=len_list_ids, number=number)
-    return document_id
 
 
 def check_412(func):

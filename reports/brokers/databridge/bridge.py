@@ -39,11 +39,11 @@ class TendersClient(BaseTendersClient):
         return super(TendersClient, self)._create_tender_resource_item(*args, **kwargs)
 
 
-class EdrDataBridge(object):
-    """ Edr API Data Bridge """
+class DataBridge(object):
+    """ Data Bridge """
 
     def __init__(self, config):
-        super(EdrDataBridge, self).__init__()
+        super(DataBridge, self).__init__()
         self.config = config
 
         api_server = self.config_get('tenders_api_server')
@@ -130,7 +130,7 @@ class EdrDataBridge(object):
             gevent.sleep(self.delay)
 
     def run(self):
-        logger.info('Start EDR API Data Bridge', extra=journal_context({"MESSAGE_ID": DATABRIDGE_START}, {}))
+        logger.info('Start Data Bridge', extra=journal_context({"MESSAGE_ID": DATABRIDGE_START}, {}))
         self._start_jobs()
         counter = 0
         try:
@@ -155,7 +155,7 @@ class EdrDataBridge(object):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Edr API Data Bridge')
+    parser = argparse.ArgumentParser(description='Data Bridge')
     parser.add_argument('config', type=str, help='Path to configuration file')
     parser.add_argument('--tender', type=str, help='Tender id to sync', dest="tender_id")
     params = parser.parse_args()
@@ -163,7 +163,7 @@ def main():
         with open(params.config) as config_file_obj:
             config = load(config_file_obj.read())
         logging.config.dictConfig(config)
-        bridge = EdrDataBridge(config)
+        bridge = DataBridge(config)
         bridge.launch()
     else:
         logger.info('Invalid configuration file. Exiting...')

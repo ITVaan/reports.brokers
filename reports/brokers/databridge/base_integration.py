@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import os
 import re
 import mysql.connector as mariadb
 import gevent
@@ -15,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class BaseIntegration(Greenlet):
-    """ Edr API Data Bridge """
+    """ Data Bridge """
 
     def __init__(self, tenders_sync_client, filtered_tender_ids_queue, services_not_available, sleep_change_value,
                  delay=15):

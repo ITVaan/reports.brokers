@@ -1,0 +1,17 @@
+[run]
+omit =
+    *tests*
+    *journal_msg_ids.py
+    *docs.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise NotImplementedError
+    except KeyboardInterrupt:
+    if __name__ == .__main__.:
+    def main()
+    if 'test' not in __import__('sys').argv[0]:
+        import gevent.monkey
+        gevent.monkey.patch_all()

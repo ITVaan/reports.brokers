@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from gevent import monkey
 
-from retrying import retry
-
 monkey.patch_all()
 
 import logging
@@ -13,15 +11,19 @@ import gevent
 
 from functools import partial
 from yaml import load
+from gevent import event
 from gevent.queue import Queue
+from retrying import retry
 from restkit import RequestError, ResourceError
 from constants import retry_mult
+
 from openprocurement_client.client import TendersClientSync as BaseTendersClientSync, TendersClient as BaseTendersClient
 from reports.brokers.databridge.scanner import Scanner
 from reports.brokers.databridge.base_integration import BaseIntegration
 from reports.brokers.databridge.utils import journal_context, check_412
-from reports.brokers.databridge.journal_msg_ids import (
-    DATABRIDGE_RESTART_WORKER, DATABRIDGE_START, DATABRIDGE_DOC_SERVICE_CONN_ERROR)
+from reports.brokers.databridge.journal_msg_ids import DATABRIDGE_RESTART_WORKER, DATABRIDGE_START, \
+    DATABRIDGE_DOC_SERVICE_CONN_ERROR
+
 from reports.brokers.databridge.sleep_change_value import APIRateController
 
 logger = logging.getLogger(__name__)
@@ -63,8 +65,8 @@ class DataBridge(object):
         self.filtered_tender_ids_queue = Queue(maxsize=buffers_size)  # queue of tender IDs with appropriate status
 
         # blockers
-        self.initialization_event = gevent.event.Event()
-        self.services_not_available = gevent.event.Event()
+        self.initialization_event = event.Event()
+        self.services_not_available = event.Event()
 
         # Workers
         self.scanner = partial(Scanner.spawn,
@@ -119,8 +121,8 @@ class DataBridge(object):
             self.set_sleep()
 
     def _start_jobs(self):
-        self.jobs = {'scanner': self.scanner(),
-                     'base_integration': self.base_integration()}
+        self.jobs = {'Scanner': self.scanner(),
+                     'BaseIntegration': self.base_integration()}
 
     def launch(self):
         while True:
@@ -141,17 +143,23 @@ class DataBridge(object):
                     counter = 0
                     logger.info('Current state: Filtered tenders {}'.format(self.filtered_tender_ids_queue.qsize()))
                 counter += 1
-                for name, job in self.jobs.items():
-                    logger.debug("{}.dead: {}".format(name, job.dead))
-                    if job.dead:
-                        logger.warning('Restarting {} worker'.format(name),
-                                       extra=journal_context({"MESSAGE_ID": DATABRIDGE_RESTART_WORKER}))
-                        self.jobs[name] = gevent.spawn(getattr(self, name))
+                self.check_and_revive_jobs()
         except KeyboardInterrupt:
             logger.info('Exiting...')
             gevent.killall(self.jobs, timeout=5)
         except Exception as e:
             logger.error(e)
+
+    def check_and_revive_jobs(self):
+        for name, job in self.jobs.items():
+            logger.debug("{}.dead: {}".format(name, job.dead))
+            if job.dead:
+                self.revive_job(name)
+
+    def revive_job(self, name):
+        logger.warning('Restarting {} worker'.format(name),
+                       extra=journal_context({"MESSAGE_ID": DATABRIDGE_RESTART_WORKER}))
+        self.jobs[name] = gevent.spawn(getattr(self, name))
 
 
 def main():

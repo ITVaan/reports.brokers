@@ -6,18 +6,12 @@ from collections import namedtuple
 
 LOGGER = getLogger(__name__)
 
-
-def item_key(tender_id, item_id):
-    return '{}_{}'.format(tender_id, item_id)
-
-
-Data = namedtuple('Data', [
-    'tender_id',  # tender ID
-    'item_id',  # qualification or award ID
-    'code',  # EDRPOU, IPN or passport
-    'item_name',  # "qualifications" or "awards"
-    'file_content'  # details for file
-])
+Data = namedtuple('Data', ['tender_id',  # tender ID
+                           'item_id',  # qualification or award ID
+                           'code',  # EDRPOU, IPN or passport
+                           'item_name',  # "qualifications" or "awards"
+                           'file_content'  # details for file
+                           ])
 
 
 def journal_context(record={}, params={}):
@@ -28,10 +22,6 @@ def journal_context(record={}, params={}):
 
 def generate_req_id():
     return b'data-bridge-req-' + str(uuid4()).encode('ascii')
-
-
-class RetryException(Exception):
-    pass
 
 
 def check_412(func):
@@ -47,3 +37,8 @@ def check_412(func):
         return response
 
     return func_wrapper
+
+
+def more_tenders(params, response):
+    return not (params.get('descending')
+                and not len(response.data) and params.get('offset') == response.next_page.offset)

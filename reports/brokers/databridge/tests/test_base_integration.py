@@ -7,20 +7,15 @@ import uuid
 import unittest
 import datetime
 
-from gevent.hub import LoopExit
 from gevent.queue import Queue
-from mock import patch, MagicMock
-from time import sleep
+from mock import MagicMock
 from munch import munchify
-from restkit.errors import Unauthorized, ResourceError, RequestFailed
-from gevent.pywsgi import WSGIServer
-from bottle import Bottle, response
+from bottle import response
 from simplejson import dumps
 from gevent import event
 
 from reports.brokers.databridge.base_integration import BaseIntegration
-from reports.brokers.databridge.tests.utils import custom_sleep, generate_request_id, ResponseMock
-from reports.brokers.databridge.bridge import TendersClientSync
+from reports.brokers.databridge.tests.utils import generate_request_id, ResponseMock
 from reports.brokers.databridge.sleep_change_value import APIRateController
 
 SERVER_RESPONSE_FLAG = 0

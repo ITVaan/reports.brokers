@@ -16,7 +16,7 @@ databridge_test_requires = requires + [
 ]
 
 databridge_requires = requires + [
-    'mysql-connector==2.1.6'
+    'mysql-connector==2.1.6',
     'PyYAML',
     'gevent',
     'LazyDB',

@@ -95,7 +95,7 @@ class BaseIntegration(BaseWorker):
 
             cursor.callproc('sp_update_tender', (strcut, tender_data['dateModified'], 0, ''))
             if "bids" in tender_data:
-                logger.info("Tender {0} got. Bids count: {1}".format(id, len(tender_data['bids'])))
+                logger.info("Tender {} got. Bids count: {}".format(tender_id, len(tender_data['bids'])))
 
                 if len(tender_data['bids']) > 0:
                     for b in tender_data['bids']:
@@ -103,9 +103,9 @@ class BaseIntegration(BaseWorker):
                             for tendr in b['tenderers']:
                                 pass
             else:
-                logger.info("Tender {0} got without bids. Status: {1}".format(tender_id, tender_data['status']))
+                logger.info("Tender {} got without bids. Status: {}".format(tender_id, tender_data['status']))
         else:
-            logger.info("Tender {0} has no enquiry period! Status: {1}".format(tender_id, tender_data['status']))
+            logger.info("Tender {} has no enquiry period! Status: {}".format(tender_id, tender_data['status']))
 
     def _start_jobs(self):
         return {'adding_to_db': spawn(self.adding_to_db)}

@@ -12,98 +12,96 @@ MySQL - 10.2.7-MariaDB : Database - reports_data
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
 /*Table structure for table `brokers` */
 
 CREATE TABLE `brokers` (
-  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID of broker for the report subsystem',
-  `code` VARCHAR(32) NOT NULL COMMENT 'Unique name (codename) of broker, the same as in INI files',
-  `created_on` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID of broker for the report subsystem',
+  `code` varchar(32) NOT NULL COMMENT 'Unique name (codename) of broker, the same as in INI files',
+  `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `broker_code` (`code`)
-) ENGINE=INNODB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8 COMMENT='Brokers, aka  ''platforms''';
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8 COMMENT='Brokers, aka  ''platforms''';
 
 /*Data for the table `brokers` */
 
-INSERT  INTO `brokers`(`id`,`code`,`created_on`) VALUES (1,'prom.ua','2017-08-15 11:38:34');
-INSERT  INTO `brokers`(`id`,`code`,`created_on`) VALUES (2,'netcast.com.ua','2017-08-15 11:38:55');
-INSERT  INTO `brokers`(`id`,`code`,`created_on`) VALUES (3,'netcast.com.ua.test','2017-08-15 18:01:01');
-INSERT  INTO `brokers`(`id`,`code`,`created_on`) VALUES (4,'it.ua','2017-08-15 18:38:49');
-INSERT  INTO `brokers`(`id`,`code`,`created_on`) VALUES (5,'newtend.com','2017-08-16 20:35:23');
-INSERT  INTO `brokers`(`id`,`code`,`created_on`) VALUES (6,'e-tender.biz','2017-08-16 20:35:23');
-INSERT  INTO `brokers`(`id`,`code`,`created_on`) VALUES (7,'public-bid.com.ua','2017-08-16 20:44:38');
-INSERT  INTO `brokers`(`id`,`code`,`created_on`) VALUES (8,'uub.com.ua','2017-08-16 21:02:55');
-INSERT  INTO `brokers`(`id`,`code`,`created_on`) VALUES (9,'zakupki.com.ua','2017-08-17 15:42:19');
+insert  into `brokers`(`id`,`code`,`created_on`) values (1,'prom.ua','2017-08-15 11:38:34');
+insert  into `brokers`(`id`,`code`,`created_on`) values (2,'netcast.com.ua','2017-08-15 11:38:55');
+insert  into `brokers`(`id`,`code`,`created_on`) values (3,'netcast.com.ua.test','2017-08-15 18:01:01');
+insert  into `brokers`(`id`,`code`,`created_on`) values (4,'it.ua','2017-08-15 18:38:49');
+insert  into `brokers`(`id`,`code`,`created_on`) values (5,'newtend.com','2017-08-16 20:35:23');
+insert  into `brokers`(`id`,`code`,`created_on`) values (6,'e-tender.biz','2017-08-16 20:35:23');
+insert  into `brokers`(`id`,`code`,`created_on`) values (7,'public-bid.com.ua','2017-08-16 20:44:38');
+insert  into `brokers`(`id`,`code`,`created_on`) values (8,'uub.com.ua','2017-08-16 21:02:55');
+insert  into `brokers`(`id`,`code`,`created_on`) values (9,'zakupki.com.ua','2017-08-17 15:42:19');
 
 /*Table structure for table `procurement_method_types` */
 
 CREATE TABLE `procurement_method_types` (
-  `id` SMALLINT(5) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `code` VARCHAR(50) NOT NULL,
+  `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `code` (`code`)
-) ENGINE=INNODB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
 
 /*Data for the table `procurement_method_types` */
 
-INSERT  INTO `procurement_method_types`(`id`,`code`) VALUES (2,'aboveThresholdEU');
-INSERT  INTO `procurement_method_types`(`id`,`code`) VALUES (1,'aboveThresholdUA');
-INSERT  INTO `procurement_method_types`(`id`,`code`) VALUES (3,'aboveThresholdUA.defense');
-INSERT  INTO `procurement_method_types`(`id`,`code`) VALUES (6,'belowThreshold');
-INSERT  INTO `procurement_method_types`(`id`,`code`) VALUES (5,'competitiveDialogueEU.stage2');
-INSERT  INTO `procurement_method_types`(`id`,`code`) VALUES (4,'competitiveDialogueUA.stage2');
+insert  into `procurement_method_types`(`id`,`code`) values (2,'aboveThresholdEU');
+insert  into `procurement_method_types`(`id`,`code`) values (1,'aboveThresholdUA');
+insert  into `procurement_method_types`(`id`,`code`) values (3,'aboveThresholdUA.defense');
+insert  into `procurement_method_types`(`id`,`code`) values (6,'belowThreshold');
+insert  into `procurement_method_types`(`id`,`code`) values (5,'competitiveDialogueEU.stage2');
+insert  into `procurement_method_types`(`id`,`code`) values (4,'competitiveDialogueUA.stage2');
 
 /*Table structure for table `procurement_methods` */
 
 CREATE TABLE `procurement_methods` (
-  `id` SMALLINT(5) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `code` VARCHAR(50) NOT NULL,
+  `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `code` (`code`)
-) ENGINE=INNODB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 
 /*Data for the table `procurement_methods` */
 
-INSERT  INTO `procurement_methods`(`id`,`code`) VALUES (3,'limited');
-INSERT  INTO `procurement_methods`(`id`,`code`) VALUES (1,'open');
-INSERT  INTO `procurement_methods`(`id`,`code`) VALUES (2,'selective');
+insert  into `procurement_methods`(`id`,`code`) values (3,'limited');
+insert  into `procurement_methods`(`id`,`code`) values (1,'open');
+insert  into `procurement_methods`(`id`,`code`) values (2,'selective');
 
 /*Table structure for table `tender_statuses` */
 
 CREATE TABLE `tender_statuses` (
-  `id` SMALLINT(5) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `code` VARCHAR(50) NOT NULL,
+  `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `code` (`code`)
-) ENGINE=INNODB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
 
 /*Data for the table `tender_statuses` */
 
-INSERT  INTO `tender_statuses`(`id`,`code`) VALUES (3,'active.auction');
-INSERT  INTO `tender_statuses`(`id`,`code`) VALUES (5,'active.awarded');
-INSERT  INTO `tender_statuses`(`id`,`code`) VALUES (1,'active.enquiries');
-INSERT  INTO `tender_statuses`(`id`,`code`) VALUES (9,'active.pre-qualification');
-INSERT  INTO `tender_statuses`(`id`,`code`) VALUES (4,'active.qualification');
-INSERT  INTO `tender_statuses`(`id`,`code`) VALUES (2,'active.tendering');
-INSERT  INTO `tender_statuses`(`id`,`code`) VALUES (8,'cancelled');
-INSERT  INTO `tender_statuses`(`id`,`code`) VALUES (7,'complete');
-INSERT  INTO `tender_statuses`(`id`,`code`) VALUES (6,'unsuccessful');
-
+insert  into `tender_statuses`(`id`,`code`) values (3,'active.auction');
+insert  into `tender_statuses`(`id`,`code`) values (5,'active.awarded');
+insert  into `tender_statuses`(`id`,`code`) values (1,'active.enquiries');
+insert  into `tender_statuses`(`id`,`code`) values (9,'active.pre-qualification');
+insert  into `tender_statuses`(`id`,`code`) values (4,'active.qualification');
+insert  into `tender_statuses`(`id`,`code`) values (2,'active.tendering');
+insert  into `tender_statuses`(`id`,`code`) values (8,'cancelled');
+insert  into `tender_statuses`(`id`,`code`) values (7,'complete');
+insert  into `tender_statuses`(`id`,`code`) values (6,'unsuccessful');
 
 /*Table structure for table `tenders` */
 
 CREATE TABLE `tenders` (
-  `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Integer ID for reports database',
-  `original_id` CHAR(32) NOT NULL COMMENT 'ID (hash, ocid) of tender in main database',
-  `status_id` SMALLINT(6) UNSIGNED NOT NULL,
-  `broker_id` INT(10) UNSIGNED NOT NULL,
-  `date_modified` DATETIME(6) NOT NULL,
-  `created_on` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-  `updated_on` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
-  `enquiry_start_date` DATETIME(6) NOT NULL,
-  `enquiry_end_date` DATETIME NOT NULL,
-  `procurement_method_type_id` SMALLINT(5) UNSIGNED DEFAULT NULL,
-  `procurement_method_id` SMALLINT(5) UNSIGNED DEFAULT NULL,
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Integer ID for reports database',
+  `original_id` char(32) NOT NULL COMMENT 'ID (hash, ocid) of tender in main database',
+  `status_id` smallint(6) unsigned NOT NULL,
+  `broker_id` int(10) unsigned NOT NULL,
+  `date_modified` datetime(6) NOT NULL,
+  `created_on` timestamp(3) NOT NULL DEFAULT current_timestamp(3),
+  `updated_on` timestamp(3) NOT NULL DEFAULT current_timestamp(3) ON UPDATE current_timestamp(3),
+  `enquiry_start_date` datetime(6) NOT NULL,
+  `enquiry_end_date` datetime NOT NULL,
+  `procurement_method_type_id` smallint(5) unsigned DEFAULT NULL,
+  `procurement_method_id` smallint(5) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `original_id` (`original_id`),
   KEY `FK_tender_broker` (`broker_id`),
@@ -114,73 +112,133 @@ CREATE TABLE `tenders` (
   CONSTRAINT `FK_tender_procmet` FOREIGN KEY (`procurement_method_id`) REFERENCES `procurement_methods` (`id`),
   CONSTRAINT `FK_tender_procmettype` FOREIGN KEY (`procurement_method_type_id`) REFERENCES `procurement_method_types` (`id`),
   CONSTRAINT `FK_tender_status` FOREIGN KEY (`status_id`) REFERENCES `tender_statuses` (`id`)
-) ENGINE=INNODB AUTO_INCREMENT=2578 DEFAULT CHARSET=utf8 COMMENT='Tenders basic information';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Tenders basic information';
 
 /*Data for the table `tenders` */
 
 /*Table structure for table `bid_statuses` */
 
 CREATE TABLE `bid_statuses` (
-  `id` SMALLINT(5) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `code` VARCHAR(50) NOT NULL,
+  `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `code` (`code`)
-) ENGINE=INNODB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
 
 /*Data for the table `bid_statuses` */
 
-INSERT  INTO `bid_statuses`(`id`,`code`) VALUES (1,'active');
-INSERT  INTO `bid_statuses`(`id`,`code`) VALUES (3,'deleted');
-INSERT  INTO `bid_statuses`(`id`,`code`) VALUES (2,'draft');
-INSERT  INTO `bid_statuses`(`id`,`code`) VALUES (6,'invalid');
-INSERT  INTO `bid_statuses`(`id`,`code`) VALUES (5,'pending');
-INSERT  INTO `bid_statuses`(`id`,`code`) VALUES (4,'unsuccessful');
+insert  into `bid_statuses`(`id`,`code`) values (1,'active');
+insert  into `bid_statuses`(`id`,`code`) values (3,'deleted');
+insert  into `bid_statuses`(`id`,`code`) values (2,'draft');
+insert  into `bid_statuses`(`id`,`code`) values (6,'invalid');
+insert  into `bid_statuses`(`id`,`code`) values (5,'pending');
+insert  into `bid_statuses`(`id`,`code`) values (4,'unsuccessful');
 
 /*Table structure for table `bids` */
 
 CREATE TABLE `bids` (
-  `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Integer ID for reports database',
-  `original_id` VARCHAR(32) NOT NULL COMMENT 'ID (hash) of bid in original database',
-  `tender_id` BIGINT(20) UNSIGNED NOT NULL,
-  `bid_date` DATETIME(6) DEFAULT NULL,
-  `status_id` SMALLINT(5) UNSIGNED NOT NULL,
-  `created_on` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Integer ID for reports database',
+  `original_id` varchar(32) NOT NULL COMMENT 'ID (hash) of bid in original database',
+  `tender_id` bigint(20) unsigned NOT NULL,
+  `bid_date` datetime(6) DEFAULT NULL,
+  `status_id` smallint(5) unsigned NOT NULL,
+  `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `FK_bid_tender` (`tender_id`),
   KEY `FK_bid_status` (`status_id`),
   CONSTRAINT `FK_bid_status` FOREIGN KEY (`status_id`) REFERENCES `bid_statuses` (`id`),
   CONSTRAINT `FK_bid_tender` FOREIGN KEY (`tender_id`) REFERENCES `tenders` (`id`)
-) ENGINE=INNODB AUTO_INCREMENT=3467 DEFAULT CHARSET=utf8 COMMENT='bids basic information';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='bids basic information';
 
 /*Data for the table `bids` */
 
+/*Table structure for table `report_types` */
+
+CREATE TABLE `report_types` (
+  `id` smallint(5) unsigned NOT NULL,
+  `name` varchar(120) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*Data for the table `report_types` */
+
+insert  into `report_types`(`id`,`name`) values (1,'Attracted Suppliers');
+insert  into `report_types`(`id`,`name`) values (2,'Correct Suppliers');
+insert  into `report_types`(`id`,`name`) values (3,'Supplier Frequency');
 
 /*Table structure for table `tenderers` */
 
 CREATE TABLE `tenderers` (
-  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Integer ID for reports database',
-  `identifier` VARCHAR(50) NOT NULL COMMENT 'Organization identifier. Contains UA-EDR for Ukrainian organizations.',
-  `scheme` VARCHAR(50) NOT NULL,
-  `created_on` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Integer ID for reports database',
+  `identifier` varchar(50) NOT NULL COMMENT 'Organization identifier. Contains UA-EDR for Ukrainian organizations.',
+  `scheme` varchar(50) NOT NULL,
+  `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `identifier` (`identifier`)
-) ENGINE=INNODB AUTO_INCREMENT=821 DEFAULT CHARSET=utf8 COMMENT='Suppliers, or tender participants. Field called ''tenderers'' in main database';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Suppliers, or tender participants. Field called ''tenderers'' in main database';
 
 /*Data for the table `tenderers` */
 
 /*Table structure for table `tenderers_bids` */
 
 CREATE TABLE `tenderers_bids` (
-  `tenderer_id` INT(10) UNSIGNED NOT NULL,
-  `bid_id` BIGINT(20) UNSIGNED NOT NULL,
-  `created_on` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+  `tenderer_id` int(10) unsigned NOT NULL,
+  `bid_id` bigint(20) unsigned NOT NULL,
+  `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`tenderer_id`,`bid_id`),
   KEY `FK_tendbid_bid` (`bid_id`),
   CONSTRAINT `FK_tendbid_bid` FOREIGN KEY (`bid_id`) REFERENCES `bids` (`id`),
   CONSTRAINT `FK_tendbid_tenderer` FOREIGN KEY (`tenderer_id`) REFERENCES `tenderers` (`id`)
-) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='Many to many link between suppliers (tenderers) and bids';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Many to many link between suppliers (tenderers) and bids';
 
 /*Data for the table `tenderers_bids` */
+
+/*Table structure for table `user_action_types` */
+
+CREATE TABLE `user_action_types` (
+  `id` smallint(5) unsigned NOT NULL,
+  `name` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*Data for the table `user_action_types` */
+
+insert  into `user_action_types`(`id`,`name`) values (1,'login');
+insert  into `user_action_types`(`id`,`name`) values (2,'view_report');
+
+/*Table structure for table `users` */
+
+CREATE TABLE `users` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_name` varchar(15) NOT NULL,
+  `password` varchar(120) NOT NULL,
+  `blocked` tinyint unsigned zerofill NOT NULL,
+  `full_name` varchar(50) DEFAULT NULL,
+  `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_name` (`user_name`),
+  KEY `blocked` (`blocked`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*Data for the table `users` */
+
+/*Table structure for table `user_actions` */
+
+CREATE TABLE `user_actions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned NOT NULL,
+  `action_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  `action_type` smallint(5) unsigned NOT NULL,
+  `report_type_id` smallint(5) unsigned DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FK1_useraction_user` (`user_id`),
+  KEY `FK2_useraction_reporttype` (`report_type_id`),
+  CONSTRAINT `FK1_useraction_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `FK2_useraction_reporttype` FOREIGN KEY (`report_type_id`) REFERENCES `report_types` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*Data for the table `user_actions` */
 
 /* Function  structure for function  `fn_parse_utc_datetime` */
 

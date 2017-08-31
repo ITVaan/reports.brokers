@@ -15,7 +15,9 @@ class GeneratorOfReports:
         self.conn = mariadb.connect(host='127.0.0.1', user='root', password='root', database='reports_data',
                                     charset='utf8')
         self.cursor = self.conn.cursor(buffered=True)
-        self.cursor.execute(eval('report{}'.format(self.report_number)))
+        self.cursor.execute(eval('report{}'.format(self.report_number)),
+                            {'start_date': self.start_report_period, 'end_date': self.end_report_period})
+
         self.templates_dir = 'templates'
         self.result_dir = 'reports'
         self.template_file_name = '{}.xlsx'.format(self.report_number)
@@ -48,4 +50,4 @@ class GeneratorOfReports:
 
 
 if __name__ == '__main__':
-    gor = GeneratorOfReports('22.06.2013', '22.07.2014', 1)
+    gor = GeneratorOfReports('01.05.2017', '01.06.2017', 1)

@@ -31,3 +31,9 @@ report2 = '''
 '''
 report3 = '''
 '''
+
+auth = '''
+SELECT id, user_name, password 
+FROM users
+WHERE user_name=%(user_name)s AND password=%(password)s
+'''

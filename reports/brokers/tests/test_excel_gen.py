@@ -4,6 +4,7 @@ from unittest import TestCase
 
 import os
 import re
+import ConfigParser
 
 import mysql.connector as mariadb
 from mysql.connector import OperationalError, ProgrammingError
@@ -11,7 +12,6 @@ from openpyxl import load_workbook
 
 
 def execute_scripts_from_file(cursor, filename):
-    print("Execution in process")
     # Open and read the file as a single buffer
     fd = open(filename, 'r')
     sql_file = fd.read()
@@ -65,9 +65,13 @@ class TestDataBaseConnection(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.conn = mariadb.connect(host='127.0.0.1', user='root', password='111')
-        # cursor = cls.conn.cursor(buffered=True)
-        # cursor.close()
+        config_parser = ConfigParser.SafeConfigParser()
+        config_parser.read("auth.ini")
+        if config_parser.has_option('Database', 'root_password'):
+            password = config_parser.get('Database', 'root_password')
+        else:
+            password = ''
+        cls.conn = mariadb.connect(host='127.0.0.1', user='root', password=password)
 
     @classmethod
     def tearDownClass(cls):
@@ -77,11 +81,13 @@ class TestDataBaseConnection(TestCase):
         cursor = self.conn.cursor(buffered=True)
 
         cursor.execute("""DROP DATABASE IF EXISTS reports_data_test;""")
-        # import pdb;pdb.set_trace()
         cursor.execute("""CREATE DATABASE IF NOT EXISTS reports_data_test;""")
         cursor.execute("""USE reports_data_test""")
         execute_scripts_from_file(cursor, "reports/brokers/database/reports_data_dev.sql")
         cursor.close()
+        self.templates_dir = 'reports/brokers/api/views/templates'
+        self.result_dir = 'reports'
+        self.template_file_name = '1.xlsx'
 
     def tearDown(self):
         cursor = self.conn.cursor(buffered=True)
@@ -95,9 +101,9 @@ class TestDataBaseConnection(TestCase):
         for broker_name, suppliers_count in cursor:
             data.append([broker_name, suppliers_count])
         cursor.close()
-        templates_dir = 'reports/templates'
+        templates_dir = 'reports/brokers/api/views/templates'
         result_dir = 'reports'
-        template_file_name = 'one.xlsx'
+        template_file_name = '1.xlsx'
 
         t = os.path.splitext(template_file_name)
         result_file = os.path.join(result_dir, t[0] + '-' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + t[1])
@@ -116,4 +122,21 @@ class TestDataBaseConnection(TestCase):
             row += 1
             print("{} - {}".format(broker_name, suppliers_count))
 
+        wb.save(result_file)
+
+    def test_create_nonempty_xls(self):
+        cursor = self.conn.cursor(buffered=True)
+        res = cursor.execute(sql)
+        data = [[name, suppliers] for (name, suppliers) in cursor]
+        cursor.close()
+        t = os.path.splitext(self.template_file_name)
+        result_file = os.path.join(self.result_dir, t[0] + '-' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + t[1])
+        copyfile(os.path.join(self.templates_dir, self.template_file_name), result_file)
+        wb = load_workbook(filename=result_file)
+        ws = wb.active
+        row = 2
+        for (broker_name, suppliers_count) in data:
+            ws.cell(row=row, column=1, value=broker_name)
+            ws.cell(row=row, column=2, value=suppliers_count)
+            row += 1
         wb.save(result_file)

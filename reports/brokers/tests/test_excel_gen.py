@@ -63,29 +63,12 @@ GROUP BY grp1.first_broker
 ORDER BY 2 DESC""";
 
 
-def get_item_from_section(conf_parser, section, item):
-    """
-    :type conf_parser: SafeConfigParser
-    :param conf_parser: Config parser with file already read into it
-    :type section: str
-    :param section: String, name of section
-    :type item: str
-    :param item: String, name of option
-    :type return: str
-    :return: item or empty string if no such section
-    """
-    if conf_parser.has_option(section, item):
-        return conf_parser.get(section, item)
-    else:
-        return ''
-
-
 class TestDataBaseConnection(TestCase):
     @classmethod
     def setUpClass(cls):
         conf_parser = SafeConfigParser()
         conf_parser.read("auth.ini")
-        password = get_item_from_section(conf_parser, "Database", "root_password")
+        password = conf_parser.get("Database", "root_password")
         cls.conn = mariadb.connect(host='127.0.0.1', user='root', password=password)
 
     @classmethod

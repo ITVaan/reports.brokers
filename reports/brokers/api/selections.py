@@ -33,7 +33,7 @@ report3 = '''
 '''
 
 auth = '''
-SELECT id, user_name, password 
+SELECT id
 FROM users
 WHERE user_name=%(user_name)s AND password=%(password)s
 '''

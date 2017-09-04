@@ -42,9 +42,9 @@ class GeneratorOfReports:
 
     def auth(self):
         self.cursor.execute(auth, {'user_name': self.user_name, 'password': self.password})
-        for i, j, k in self.cursor:
-            if isinstance(i, int):
-                self.user_id = i
+        for i in self.cursor:
+            if isinstance(i[0], int):
+                self.user_id = i[0]
                 return True
             else:
                 return False
@@ -88,7 +88,6 @@ class GeneratorOfReports:
             self.ws.cell(row=row, column=1, value=broker_name)
             self.ws.cell(row=row, column=2, value=suppliers_count)
             row += 1
-        self.wb.save(self.result_file)
 
     def report_2(self):
         pass
@@ -98,5 +97,5 @@ class GeneratorOfReports:
 
 
 if __name__ == '__main__':
-    gor = GeneratorOfReports('01.05.2017', '01.06.2017', 1, 'admin', '1234')
+    gor = GeneratorOfReports('01.05.2017', '01.06.2017', 1, 'Vlad', '1234')
     print('Well done!')

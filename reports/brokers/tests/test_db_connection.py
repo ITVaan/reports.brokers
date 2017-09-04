@@ -91,13 +91,11 @@ class TestDataBaseConnection(TestCase):
     def test_create_xls(self):
         cursor = self.conn.cursor(buffered=True)
         res = cursor.execute(sql)
-        data = []
-        for broker_name, suppliers_count in cursor:
-            data.append([broker_name, suppliers_count])
+        data = [[broker_name, suppliers_count] for (broker_name, suppliers_count) in cursor]
         cursor.close()
-        templates_dir = 'reports/templates'
+        templates_dir = 'reports/brokers/api/views/templates'
         result_dir = 'reports'
-        template_file_name = 'one.xlsx'
+        template_file_name = '1.xlsx'
         t = os.path.splitext(template_file_name)
         result_file = os.path.join(result_dir, t[0] + '-' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + t[1])
         copyfile(os.path.join(templates_dir, template_file_name), result_file)
@@ -108,5 +106,4 @@ class TestDataBaseConnection(TestCase):
             ws.cell(row=row, column=1, value=broker_name)
             ws.cell(row=row, column=2, value=suppliers_count)
             row += 1
-            print("{} - {}".format(broker_name, suppliers_count))
         wb.save(result_file)

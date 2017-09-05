@@ -193,19 +193,6 @@ CREATE TABLE `tenderers_bids` (
 
 /*Data for the table `tenderers_bids` */
 
-/*Table structure for table `user_action_types` */
-
-CREATE TABLE `user_action_types` (
-  `id` smallint(5) unsigned NOT NULL,
-  `name` varchar(50) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-/*Data for the table `user_action_types` */
-
-insert  into `user_action_types`(`id`,`name`) values (1,'login');
-insert  into `user_action_types`(`id`,`name`) values (2,'view_report');
-
 /*Table structure for table `users` */
 
 CREATE TABLE `users` (
@@ -229,8 +216,9 @@ CREATE TABLE `user_actions` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,
   `action_date` timestamp NOT NULL DEFAULT current_timestamp(),
-  `action_type` smallint(5) unsigned NOT NULL,
   `report_type_id` smallint(5) unsigned DEFAULT NULL,
+	`start_report_period` timestamp NOT NULL,
+	`end_report_period` timestamp NOT NULL,
   PRIMARY KEY (`id`),
   KEY `FK1_useraction_user` (`user_id`),
   KEY `FK2_useraction_reporttype` (`report_type_id`),

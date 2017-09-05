@@ -35,5 +35,10 @@ report3 = '''
 auth = '''
 SELECT id
 FROM users
-WHERE user_name=%(user_name)s AND password=SHA2(%(password)s, 256)
+WHERE user_name=%(user_name)s AND password=SHA2(%(password)s, 256) AND blocked=1
+'''
+
+logging = '''
+INSERT INTO user_actions(user_id, report_type_id, start_report_period, end_report_period)
+VALUES (%(user_id)s, %(report_type_id)s, %(start_report_period)s, %(end_report_period)s)
 '''

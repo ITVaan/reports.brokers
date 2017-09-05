@@ -2,9 +2,10 @@ import os
 from shutil import copyfile
 from datetime import datetime
 import mysql.connector as mariadb
+from mysql.connector.constants import ClientFlag
 from openpyxl import load_workbook
 from uuid import uuid4
-from reports.brokers.api.selections import report1, report2, report3, auth
+from reports.brokers.api.selections import report1, report2, report3, auth, logging
 
 
 class GeneratorOfReports:
@@ -24,15 +25,28 @@ class GeneratorOfReports:
         self.templates_dir = 'templates'
         self.result_dir = 'reports'
 
-        self.deleting_old_reports()
-
         # DataBase connection
-        self.conn = mariadb.connect(host='localhost', user='root', password='root', database='reports_data',
-                                    charset='utf8')
+        config = {
+            'user': 'root',
+            'password': 'root',
+            'host': 'localhost',
+            'client_flags': [ClientFlag.SSL],
+            'ssl_ca': '/etc/mysql/ssl/ca-cert.pem',
+            'ssl_cert': '/etc/mysql/ssl/client-cert.pem',
+            'ssl_key': '/etc/mysql/ssl/client-key.pem',
+            'database': 'reports_data',
+            'charset': 'utf8'
+        }
+
+        self.conn = mariadb.connect(**config)
         self.cursor = self.conn.cursor(buffered=True)
 
-        if self.auth():
+        # Launching of reports generator
+        self.user_id = self.auth()
+        if self.user_id:
             self.start_reporting()
+            self.logging()
+            self.conn.commit()
             self.cursor.close()
             self.conn.close()
             self.wb.save(self.result_file)
@@ -44,34 +58,42 @@ class GeneratorOfReports:
         self.cursor.execute(auth, {'user_name': self.user_name, 'password': self.password})
         for i in self.cursor:
             if isinstance(i[0], int):
-                self.user_id = i[0]
-                return True
-            else:
-                return False
+                return i[0]
 
     def start_reporting(self):
-        self.cursor.execute(eval('report{}'.format(self.report_number)), {'start_date': self.start_report_period,
-                                                                          'end_date': self.end_report_period})
+        if self.report_number == '1':
+            self.cursor.execute(report1, {'start_date': self.start_report_period,
+                                          'end_date': self.end_report_period})
+        elif self.report_number == '2':
+            self.cursor.execute(report2, {'start_date': self.start_report_period,
+                                          'end_date': self.end_report_period})
+        elif self.report_number == '3':
+            self.cursor.execute(report3, {'start_date': self.start_report_period,
+                                          'end_date': self.end_report_period})
+
         # Report file creation
         template_file_name = '{}.xlsx'.format(self.report_number)
-        t = os.path.splitext(template_file_name)
+        file_format = os.path.splitext(template_file_name)[1]
         self.result_file = os.path.join(self.result_dir, datetime.now().strftime('%Y-%m-%d-%H-%M-%S') +
                                         '_report-number=' + str(self.report_number) +
-                                        '_' + str(self.user_id) + '_' + uuid4().hex + t[1])
+                                        '_' + str(self.user_id) + '_' + uuid4().hex + file_format)
         copyfile(os.path.join(self.templates_dir, template_file_name), self.result_file)
         self.wb = load_workbook(filename=self.result_file)
         self.ws = self.wb.active
 
         # Start
-        eval('self.report_{}()'.format(self.report_number))
+        if self.report_number == 1:
+            self.report_1()
+        elif self.report_number == 2:
+            self.report_2()
+        elif self.report_number == 3:
+            self.report_3()
 
-    def deleting_old_reports(self):
-        for file in os.listdir(self.result_dir):
-            file_date = datetime.strptime(str(file.split('_report-number=')[0]), '%Y-%m-%d-%H-%M-%S')
-            now = datetime.now()
-            delta = now - file_date
-            if delta.days >= 1:
-                os.remove(os.path.abspath(os.path.join(self.result_dir, file)))
+    def logging(self):
+        self.cursor.execute(logging, {'user_id': self.user_id,
+                                      'report_type_id': self.report_number,
+                                      'start_report_period': self.start_report_period,
+                                      'end_report_period': self.end_report_period})
 
     def get_path_from_hash(self, hash_file):
         for file in os.listdir(self.result_dir):

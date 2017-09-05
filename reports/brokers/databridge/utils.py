@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-from uuid import uuid4
-from logging import getLogger
-from restkit import ResourceError
 from collections import namedtuple
+from logging import getLogger
+from uuid import uuid4
+
+from restkit import ResourceError
 
 LOGGER = getLogger(__name__)
 

@@ -35,7 +35,7 @@ report3 = '''
 auth = '''
 SELECT id
 FROM users
-WHERE user_name=%(user_name)s AND password=SHA2(%(password)s, 256) AND blocked=1
+WHERE user_name=%(user_name)s AND password=SHA2(%(password)s, 256) AND blocked=0
 '''
 
 logging = '''

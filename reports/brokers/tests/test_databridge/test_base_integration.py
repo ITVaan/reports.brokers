@@ -15,7 +15,7 @@ from simplejson import dumps
 from gevent import event
 
 from reports.brokers.databridge.base_integration import BaseIntegration
-from reports.brokers.databridge.tests.utils import generate_request_id, ResponseMock
+from reports.brokers.tests.test_databridge.utils import generate_request_id, ResponseMock
 from reports.brokers.databridge.sleep_change_value import APIRateController
 
 SERVER_RESPONSE_FLAG = 0

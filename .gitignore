@@ -88,3 +88,10 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Pycharm settings
+.idea
+
+# Report files
+*.xls
+*.xlsx

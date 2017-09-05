@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from gevent import killall
-from mock import patch, MagicMock
-from reports.brokers.databridge.bridge import DataBridge
-from reports.brokers.databridge.tests.base import BaseServersTest, config
-from reports.brokers.databridge.tests.utils import custom_sleep, AlmostAlwaysTrue
-from openprocurement_client.client import TendersClientSync, TendersClient
+from mock import MagicMock, patch
+from openprocurement_client.client import TendersClient, TendersClientSync
 from restkit import RequestError
+
+from reports.brokers.databridge.bridge import DataBridge
+from reports.brokers.tests.test_databridge.base import BaseServersTest, config
+from reports.brokers.tests.test_databridge.utils import AlmostAlwaysTrue, custom_sleep
 
 
 class TestBridgeWorker(BaseServersTest):
@@ -118,3 +119,9 @@ class TestBridgeWorker(BaseServersTest):
         self.worker.revive_job('scanner')
         self.assertEqual(self.worker.jobs['scanner'].dead, False)
         killall(self.worker.jobs.values())
+
+    def test_check_and_revive_jobs(self):
+        self.worker.jobs = {"test": MagicMock(dead=MagicMock(return_value=True))}
+        self.worker.revive_job = MagicMock()
+        self.worker.check_and_revive_jobs()
+        self.worker.revive_job.assert_called_once_with("test")

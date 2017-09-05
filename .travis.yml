@@ -2,6 +2,8 @@ language: python
 sudo: false
 python:
   - "2.7"
+addons:
+  mariadb: '10.2'
 env:
   - TZ=Europe/Kiev
 cache:
@@ -10,6 +12,7 @@ cache:
 before_install:
   - pip install setuptools==7.0
   - python2 bootstrap.py
+services: mariadb
 install:
   - bin/buildout -N
 script:

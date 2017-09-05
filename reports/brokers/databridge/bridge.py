@@ -21,8 +21,8 @@ from openprocurement_client.client import TendersClientSync as BaseTendersClient
 from reports.brokers.databridge.scanner import Scanner
 from reports.brokers.databridge.base_integration import BaseIntegration
 from reports.brokers.databridge.utils import journal_context, check_412
-from reports.brokers.databridge.journal_msg_ids import DATABRIDGE_RESTART_WORKER, DATABRIDGE_START, \
-    DATABRIDGE_DOC_SERVICE_CONN_ERROR
+from reports.brokers.databridge.journal_msg_ids import (DATABRIDGE_RESTART_WORKER, DATABRIDGE_START,
+                                                        DATABRIDGE_DOC_SERVICE_CONN_ERROR)
 
 from reports.brokers.databridge.sleep_change_value import APIRateController
 

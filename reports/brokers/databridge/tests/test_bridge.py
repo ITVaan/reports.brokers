@@ -118,3 +118,9 @@ class TestBridgeWorker(BaseServersTest):
         self.worker.revive_job('scanner')
         self.assertEqual(self.worker.jobs['scanner'].dead, False)
         killall(self.worker.jobs.values())
+
+    def test_check_and_revive_jobs(self):
+        self.worker.jobs = {"test": MagicMock(dead=MagicMock(return_value=True))}
+        self.worker.revive_job = MagicMock()
+        self.worker.check_and_revive_jobs()
+        self.worker.revive_job.assert_called_once_with("test")

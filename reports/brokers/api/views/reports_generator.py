@@ -1,3 +1,4 @@
+# coding=utf-8
 import os
 from shutil import copyfile
 from datetime import datetime
@@ -5,10 +6,11 @@ import mysql.connector as mariadb
 from openpyxl import load_workbook
 from uuid import uuid4
 from reports.brokers.api.selections import report1, report2, report3, auth
+from reports.brokers.utils import get_root_pwd
 
 
 class GeneratorOfReports:
-    def __init__(self, start_report_period, end_report_period, report_number, user_name, password):
+    def __init__(self, start_report_period, end_report_period, report_number, user_name, password, db_name):
         # Report period
         self.start_report_period = datetime.strptime(str(start_report_period), '%d.%m.%Y')
         self.end_report_period = datetime.strptime(str(end_report_period), '%d.%m.%Y')
@@ -21,14 +23,13 @@ class GeneratorOfReports:
         self.data = []
 
         # Excel directories
-        self.templates_dir = 'templates'
-        self.result_dir = 'reports'
+        self.templates_dir = 'reports/brokers/api/views/templates'
+        self.result_dir = 'reports/reports'
 
         self.deleting_old_reports()
 
         # DataBase connection
-        self.conn = mariadb.connect(host='127.0.0.1', user='root', password='root', database='reports_data',
-                                    charset='utf8')
+        self.conn = mariadb.connect(host='127.0.0.1', user='root', password=get_root_pwd(), database=db_name, charset='utf8')
         self.cursor = self.conn.cursor(buffered=True)
 
         if self.auth():
@@ -55,15 +56,18 @@ class GeneratorOfReports:
         # Report file creation
         template_file_name = '{}.xlsx'.format(self.report_number)
         t = os.path.splitext(template_file_name)
-        self.result_file = os.path.join(self.result_dir, datetime.now().strftime('%Y-%m-%d-%H-%M-%S') +
-                                        '_report-number=' + str(self.report_number) +
-                                        '_' + str(self.user_id) + '_' + uuid4().hex + t[1])
+        self.result_file = os.path.join(self.result_dir, self.filename(t))
         copyfile(os.path.join(self.templates_dir, template_file_name), self.result_file)
         self.wb = load_workbook(filename=self.result_file)
         self.ws = self.wb.active
-
         # Start
         eval('self.report_{}()'.format(self.report_number))
+
+    def filename(self, t):
+        return "{date}_report-number={num}_{uid}_{uuid4}{ext}".format(date=datetime.now().strftime('%Y-%m-%d-%H-%M-%S'),
+                                                                      num=str(self.report_number),
+                                                                      uid=str(self.user_id),
+                                                                      uuid4=uuid4().hex, ext=t[1])
 
     def deleting_old_reports(self):
         for file in os.listdir(self.result_dir):

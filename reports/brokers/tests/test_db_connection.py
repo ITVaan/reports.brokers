@@ -1,5 +1,4 @@
 # coding=utf-8
-from ConfigParser import SafeConfigParser
 from datetime import datetime
 from shutil import copyfile
 from unittest import TestCase
@@ -8,11 +7,13 @@ import os
 import re
 
 import mysql.connector as mariadb
-from openpyxl import load_workbook
+from openpyxl import load_workbook, Workbook
+from reports.brokers.api.selections import report1
+from reports.brokers.tests.utils import copy_xls_file_from_template, create_example_worksheet, load_and_fill_result_workbook
+from reports.brokers.utils import get_root_pwd
 
 
 def execute_scripts_from_file(cursor, filename):
-    print("Execution in process")
     # Open and read the file as a single buffer
     fd = open(filename, 'r')
     sql_file = fd.read()
@@ -32,44 +33,10 @@ def execute_scripts_from_file(cursor, filename):
             cursor.execute(query)
 
 
-sql = """SELECT grp1.first_broker, COUNT(grp1.identifier) AS new_tenderers_count
-FROM
-    (
-        SELECT
-            ts.`identifier`,
-            (
-                SELECT br2.code
-                FROM
-                    tenders t2
-                    LEFT JOIN `brokers` br2 ON br2.`id` = t2.`broker_id`
-                    LEFT JOIN bids b2 ON b2.`tender_id` = t2.id
-                    LEFT JOIN `tenderers_bids` tb2 ON tb2.`bid_id` = b2.id
-                WHERE tb2.tenderer_id = ts.`id`
-                ORDER BY b2.bid_date
-                LIMIT 1) AS first_broker,
-                COUNT(t.id) AS tenders_count
-        FROM
-            tenders t
-            LEFT JOIN `brokers` br ON br.`id` = t.`broker_id`
-            LEFT JOIN bids b ON b.`tender_id` = t.id
-            LEFT JOIN `tenderers_bids` tb ON tb.`bid_id` = b.id
-            LEFT JOIN tenderers ts ON ts.`id` = tb.`tenderer_id`
-        WHERE ts.`id` IS NOT NULL
-        GROUP BY ts.`identifier`
-        HAVING COUNT(t.id) > 1
-        ORDER BY ts.`id`
-    ) AS grp1
-GROUP BY grp1.first_broker
-ORDER BY 2 DESC""";
-
-
 class TestDataBaseConnection(TestCase):
     @classmethod
     def setUpClass(cls):
-        conf_parser = SafeConfigParser()
-        conf_parser.read("auth.ini")
-        password = conf_parser.get("Database", "root_password")
-        cls.conn = mariadb.connect(host='127.0.0.1', user='root', password=password)
+        cls.conn = mariadb.connect(host='127.0.0.1', user='root', password=get_root_pwd())
 
     @classmethod
     def tearDownClass(cls):
@@ -88,13 +55,13 @@ class TestDataBaseConnection(TestCase):
         cursor.execute("""DROP DATABASE IF EXISTS reports_data_test;""")
         cursor.close()
 
-    def test_create_xls(self):
+    def test_create_empty_xls(self):
         cursor = self.conn.cursor(buffered=True)
-        res = cursor.execute(sql)
+        res = cursor.execute(report1, {'start_date': '01.05.2017', 'end_date': '01.06.2017'})
         data = [[broker_name, suppliers_count] for (broker_name, suppliers_count) in cursor]
         cursor.close()
         templates_dir = 'reports/brokers/api/views/templates'
-        result_dir = 'reports'
+        result_dir = 'reports/brokers/tests/reports'
         template_file_name = '1.xlsx'
         t = os.path.splitext(template_file_name)
         result_file = os.path.join(result_dir, t[0] + '-' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + t[1])
@@ -107,3 +74,30 @@ class TestDataBaseConnection(TestCase):
             ws.cell(row=row, column=2, value=suppliers_count)
             row += 1
         wb.save(result_file)
+
+    def test_create_nonempty_xls(self):
+        cursor = self.conn.cursor(buffered=True)
+        start = datetime(2017, 8, 20)
+        end = datetime(2017, 8, 30)
+        modified = datetime(2017, 9, 2)
+        cursor.execute("""
+            insert into `tenders` (`original_id`,`status_id`,`broker_id`,`date_modified`,`enquiry_start_date`,
+              `enquiry_end_date`) 
+            values ('111', 1, 1, '{}', '{}', '{}')  
+        """.format(modified, start, end))
+        cursor.execute("insert into `tenderers` (`identifier`, `scheme`) values ('12345', '1234');")
+        cursor.execute("insert into `bids` (`original_id`, `tender_id`, `status_id`) values ('111', 1, 1)")
+        cursor.execute("insert into `tenderers_bids` (`tenderer_id`, `bid_id`) values (1, 1)")
+
+        res = cursor.execute(report1, {'start_date': datetime.strptime('01.05.2017', '%d.%m.%Y'),
+                                       'end_date': datetime.strptime('04.09.2017', '%d.%m.%Y')})
+        data = [[broker_name, suppliers_count] for (broker_name, suppliers_count) in cursor]
+        cursor.close()
+
+        result_file = copy_xls_file_from_template()
+        wb = load_and_fill_result_workbook(data, result_file)
+        ws = wb.active
+        ws_expected = create_example_worksheet()
+        self.assertEqual([row.value for col in ws for row in col], [row.value for col in ws_expected for row in col])
+        wb.save(result_file)
+

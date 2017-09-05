@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-import os
 import unittest
 
+import os
 from bottle import Bottle, response
 from gevent.pywsgi import WSGIServer
 

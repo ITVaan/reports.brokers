@@ -1,12 +1,14 @@
 # coding=utf-8
 import os
-from shutil import copyfile
-from datetime import datetime
 import mysql.connector as mariadb
-from openpyxl import load_workbook
+
+from datetime import datetime
+from shutil import copyfile
 from uuid import uuid4
-from reports.brokers.api.selections import report1, report2, report3, auth
+from openpyxl import load_workbook
+
 from reports.brokers.utils import get_root_pwd
+from reports.brokers.api.selections import *
 
 
 class GeneratorOfReports:
@@ -29,7 +31,8 @@ class GeneratorOfReports:
         self.deleting_old_reports()
 
         # DataBase connection
-        self.conn = mariadb.connect(host='127.0.0.1', user='root', password=get_root_pwd(), database=db_name, charset='utf8')
+        self.conn = mariadb.connect(host='127.0.0.1', user='root', password=get_root_pwd(), database=db_name,
+                                    charset='utf8')
         self.cursor = self.conn.cursor(buffered=True)
 
         if self.auth():

@@ -3,13 +3,14 @@ from datetime import datetime
 from shutil import copyfile
 from unittest import TestCase
 
+import mysql.connector as mariadb
 import os
 import re
+from openpyxl import load_workbook
 
-import mysql.connector as mariadb
-from openpyxl import load_workbook, Workbook
 from reports.brokers.api.selections import report1
-from reports.brokers.tests.utils import copy_xls_file_from_template, create_example_worksheet, load_and_fill_result_workbook
+from reports.brokers.tests.utils import (copy_xls_file_from_template, create_example_worksheet,
+                                         load_and_fill_result_workbook)
 from reports.brokers.utils import get_root_pwd
 
 
@@ -61,7 +62,7 @@ class TestDataBaseConnection(TestCase):
         data = [[broker_name, suppliers_count] for (broker_name, suppliers_count) in cursor]
         cursor.close()
         templates_dir = 'reports/brokers/api/views/templates'
-        result_dir = 'reports/brokers/tests/reports'
+        result_dir = 'reports/brokers/tests/test_reports'
         template_file_name = '1.xlsx'
         t = os.path.splitext(template_file_name)
         result_file = os.path.join(result_dir, t[0] + '-' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + t[1])
@@ -85,9 +86,9 @@ class TestDataBaseConnection(TestCase):
               `enquiry_end_date`) 
             values ('111', 1, 1, '{}', '{}', '{}')  
         """.format(modified, start, end))
-        cursor.execute("insert into `tenderers` (`identifier`, `scheme`) values ('12345', '1234');")
-        cursor.execute("insert into `bids` (`original_id`, `tender_id`, `status_id`) values ('111', 1, 1)")
-        cursor.execute("insert into `tenderers_bids` (`tenderer_id`, `bid_id`) values (1, 1)")
+        cursor.execute("INSERT INTO `tenderers` (`identifier`, `scheme`) VALUES ('12345', '1234');")
+        cursor.execute("INSERT INTO `bids` (`original_id`, `tender_id`, `status_id`) VALUES ('111', 1, 1)")
+        cursor.execute("INSERT INTO `tenderers_bids` (`tenderer_id`, `bid_id`) VALUES (1, 1)")
 
         res = cursor.execute(report1, {'start_date': datetime.strptime('01.05.2017', '%d.%m.%Y'),
                                        'end_date': datetime.strptime('04.09.2017', '%d.%m.%Y')})
@@ -100,4 +101,3 @@ class TestDataBaseConnection(TestCase):
         ws_expected = create_example_worksheet()
         self.assertEqual([row.value for col in ws for row in col], [row.value for col in ws_expected for row in col])
         wb.save(result_file)
-

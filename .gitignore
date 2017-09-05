@@ -91,3 +91,7 @@ ENV/
 
 # Pycharm settings
 .idea
+
+# Report files
+*.xls
+*.xlsx

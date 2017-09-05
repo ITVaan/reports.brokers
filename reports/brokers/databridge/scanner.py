@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 import logging.config
-
 from datetime import datetime
 
 import gevent
 from gevent import spawn
 from gevent.event import Event
-from reports.brokers.databridge.base_worker import BaseWorker
-from reports.brokers.databridge.constants import retry_mult
-from reports.brokers.databridge.journal_msg_ids import DATABRIDGE_INFO, DATABRIDGE_SYNC_SLEEP, \
-    DATABRIDGE_TENDER_PROCESS, DATABRIDGE_WORKER_DIED
-from reports.brokers.databridge.utils import journal_context, generate_req_id, more_tenders
 from restkit import ResourceError
 from retrying import retry
+
+from reports.brokers.databridge.base_worker import BaseWorker
+from reports.brokers.databridge.constants import retry_mult
+from reports.brokers.databridge.journal_msg_ids import (DATABRIDGE_INFO, DATABRIDGE_SYNC_SLEEP,
+                                                        DATABRIDGE_TENDER_PROCESS, DATABRIDGE_WORKER_DIED)
+from reports.brokers.databridge.utils import generate_req_id, journal_context, more_tenders
 
 logger = logging.getLogger(__name__)
 

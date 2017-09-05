@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from gevent import monkey
+
 from reports.brokers.databridge.base_worker import BaseWorker
 
 monkey.patch_all()
@@ -83,7 +84,6 @@ class BaseIntegration(BaseWorker):
         tender_data = tender_json['data']
 
         if 'enquiryPeriod' in tender_data:
-
             cursor = conn.cursor(buffered=False)
             str = json.dumps(tender_json, separators=(',', ':'))
 

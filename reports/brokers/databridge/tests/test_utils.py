@@ -2,8 +2,9 @@
 from unittest import TestCase
 
 from mock import MagicMock
-from reports.brokers.databridge.utils import check_412
 from restkit import ResourceError
+
+from reports.brokers.databridge.utils import check_412
 
 
 class TestUtils(TestCase):

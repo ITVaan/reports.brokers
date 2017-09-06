@@ -20,7 +20,7 @@ class TestReportsDeleting(TestCase):
     @patch('gevent.sleep')
     def test_deleting(self, gevent_sleep):
         gevent_sleep.side_effect = custom_sleep
-        result_dir = 'reports/brokers/tests/test_reports'
+        result_dir = 'test_reports'
         result_file = os.path.join(result_dir, '2017-08-05-17-00-00_report-number=1.xlsx')
         open(result_file, 'a').close()
         worker = ReportCleaner.spawn()

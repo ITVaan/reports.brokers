@@ -10,7 +10,7 @@ from openpyxl import load_workbook
 from mysql.connector.constants import ClientFlag
 
 from reports.brokers.api.selections import *
-from reports.brokers.tests.test_api.utils import (copy_xls_file_from_template, create_example_worksheet,
+from reports.brokers.tests.utils import (copy_xls_file_from_template, create_example_worksheet,
                                                   load_and_fill_result_workbook)
 from reports.brokers.utils import get_root_pwd
 

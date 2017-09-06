@@ -1,11 +1,11 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from unittest import TestCase
 
 import mysql.connector as mariadb
 from mysql.connector.constants import ClientFlag
 
 from reports.brokers.api.views.reports_generator import GeneratorOfReports
-from reports.brokers.tests.test_db_connection import execute_scripts_from_file
+from reports.brokers.tests.test_api.test_db_connection import execute_scripts_from_file
 from reports.brokers.utils import get_root_pwd
 
 
@@ -48,3 +48,4 @@ class TestReportsGenerator(TestCase):
         self.conn.commit()
         rep_gen = GeneratorOfReports('01.05.2017', '01.06.2017', 1, 'test', 'test', "reports_data_test")
         self.assertEqual(rep_gen.report_number, 1)
+

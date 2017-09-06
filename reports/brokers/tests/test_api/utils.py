@@ -1,16 +1,17 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from openpyxl import Workbook, load_workbook
 from os import path
-from datetime import datetime
 from shutil import copyfile
+from gevent import sleep as gsleep
 
 
 def copy_xls_file_from_template():
     templates_dir = 'reports/brokers/api/views/templates'
     result_dir = 'reports/brokers/tests/test_reports'
     template_file_name = '1.xlsx'
-    t = path.splitext(template_file_name)
-    result_file = path.join(result_dir, t[0] + '-' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + t[1])
+    file_format = path.splitext(template_file_name)
+    result_file = path.join(result_dir, '2017-08-05-17-00-00' + '_report-number=' +
+                            file_format[0] + file_format[1])
     copyfile(path.join(templates_dir, template_file_name), result_file)
     return result_file
 
@@ -35,3 +36,7 @@ def load_and_fill_result_workbook(data, result_file):
         ws.cell(row=row, column=2, value=suppliers_count)
         row += 1
     return res
+
+
+def custom_sleep(seconds=0):
+    return gsleep(seconds=0)

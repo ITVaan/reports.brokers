@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from datetime import datetime
 from shutil import copyfile
 from unittest import TestCase
@@ -10,8 +10,8 @@ from openpyxl import load_workbook
 from mysql.connector.constants import ClientFlag
 
 from reports.brokers.api.selections import *
-from reports.brokers.tests.utils import (copy_xls_file_from_template, create_example_worksheet,
-                                         load_and_fill_result_workbook)
+from reports.brokers.tests.test_api.utils import (copy_xls_file_from_template, create_example_worksheet,
+                                                  load_and_fill_result_workbook)
 from reports.brokers.utils import get_root_pwd
 
 
@@ -75,8 +75,9 @@ class TestDataBaseConnection(TestCase):
         templates_dir = 'reports/brokers/api/views/templates'
         result_dir = 'reports/brokers/tests/test_reports'
         template_file_name = '1.xlsx'
-        t = os.path.splitext(template_file_name)
-        result_file = os.path.join(result_dir, t[0] + '-' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + t[1])
+        file_format = os.path.splitext(template_file_name)
+        result_file = os.path.join(result_dir, '2017-08-05-17-00-00' + '_report-number=' +
+                                   file_format[0] + file_format[1])
         copyfile(os.path.join(templates_dir, template_file_name), result_file)
         wb = load_workbook(filename=result_file)
         ws = wb.active

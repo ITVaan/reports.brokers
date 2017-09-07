@@ -1,4 +1,5 @@
 # coding=utf-8
+import hashlib
 from unittest import TestCase
 
 import mysql.connector as mariadb
@@ -23,6 +24,17 @@ class TestReportsGenerator(TestCase):
         cursor.execute("""CREATE DATABASE IF NOT EXISTS reports_data_test;""")
         cursor.execute("""USE reports_data_test""")
         execute_scripts_from_file(cursor, "reports/brokers/database/reports_data_dev.sql")
+        self.config = {
+            'main': {
+                'user': 'root',
+                'password': get_root_pwd(),
+                'host': 'localhost',
+                'database': 'reports_data_test',
+                'charset': 'utf8',
+                'templates_dir': "reports/brokers/api/views/templates",
+                'result_dir': "reports/reports"
+            }
+        }
         cursor.close()
 
     def tearDown(self):
@@ -32,8 +44,12 @@ class TestReportsGenerator(TestCase):
 
     def test_init(self):
         cursor = self.conn.cursor(buffered=True)
-        cursor.execute("""INSERT INTO `users` (`user_name`, `password`, `blocked`) VALUES ("Vlad", "1234", 0);""")
+        password = hashlib.sha256("1234").hexdigest()
+        cursor.execute("""INSERT INTO `users` (`user_name`, `password`, `blocked`) VALUES ("Vlad", "{}", 0);""".format(
+            password))
         cursor.close()
         self.conn.commit()
-        rep_gen = GeneratorOfReports('01.05.2017', '01.06.2017', 1, 'Vlad', '1234', "reports_data_test")
+        rep_gen = GeneratorOfReports('01.05.2017', '01.06.2017', 1, 'Vlad', '1234', self.config)
         self.assertEqual(rep_gen.report_number, 1)
+        self.assertEqual(rep_gen.password, password)
+        self.assertEqual(rep_gen.config, self.config)

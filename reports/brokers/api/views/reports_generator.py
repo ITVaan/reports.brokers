@@ -1,4 +1,7 @@
 # coding=utf-8
+import argparse
+import hashlib
+
 import os
 import mysql.connector as mariadb
 
@@ -6,13 +9,14 @@ from datetime import datetime
 from shutil import copyfile
 from uuid import uuid4
 from openpyxl import load_workbook
+from yaml import load
 
 from reports.brokers.utils import get_root_pwd
 from reports.brokers.api.selections import *
 
 
 class GeneratorOfReports:
-    def __init__(self, start_report_period, end_report_period, report_number, user_name, password, db_name):
+    def __init__(self, start_report_period, end_report_period, report_number, user_name, password, config):
         # Report period
         self.start_report_period = datetime.strptime(str(start_report_period), '%d.%m.%Y')
         self.end_report_period = datetime.strptime(str(end_report_period), '%d.%m.%Y')
@@ -20,22 +24,26 @@ class GeneratorOfReports:
         # Authentication check
         self.report_number = report_number
         self.user_name = user_name
-        self.password = password
+        self.password = hashlib.sha256(password).hexdigest()
+        self.config = config
 
         self.data = []
 
         # Excel directories
-        self.templates_dir = 'reports/brokers/api/views/templates'
-        self.result_dir = 'reports/reports'
+        self.templates_dir = self.config_get("templates_dir")
+        self.result_dir = self.config_get("result_dir")
 
         self.deleting_old_reports()
 
         # DataBase connection
-        self.conn = mariadb.connect(host='127.0.0.1', user='root', password=get_root_pwd(), database=db_name,
-                                    charset='utf8')
+        self.conn = mariadb.connect(host=self.config_get("host"), user=self.config_get("user"),
+                                    password=get_root_pwd(), database=self.config_get("database"),
+                                    charset=self.config_get("charset"))
         self.cursor = self.conn.cursor(buffered=True)
 
-        if self.auth():
+        # Launching of reports generator
+        self.user_id = self.auth()
+        if self.user_id:
             self.start_reporting()
             self.cursor.close()
             self.conn.close()
@@ -44,14 +52,14 @@ class GeneratorOfReports:
             print('Permission denied')
             exit()
 
+    def config_get(self, name):
+        return self.config.get('main').get(name)
+
     def auth(self):
         self.cursor.execute(auth, {'user_name': self.user_name, 'password': self.password})
         for i in self.cursor:
             if isinstance(i[0], int):
-                self.user_id = i[0]
-                return True
-            else:
-                return False
+                return i[0]
 
     def start_reporting(self):
         self.cursor.execute(eval('report{}'.format(self.report_number)), {'start_date': self.start_report_period,
@@ -104,5 +112,14 @@ class GeneratorOfReports:
 
 
 if __name__ == '__main__':
-    gor = GeneratorOfReports('01.05.2017', '01.06.2017', 1, 'Vlad', '1234')
+    # parser = argparse.ArgumentParser(description='reports_brokers')
+    # parser.add_argument('config', type=str, help='Path to configuration file')
+    # params = parser.parse_args()
+    # if os.path.isfile(params.config):
+    with open("/home/dtrenkenshu/PycharmProjects/reports.brokers/etc/reports_brokers.yaml") as config_file_obj:
+        config = load(config_file_obj.read())
+    os.chdir("/home/dtrenkenshu/PycharmProjects/reports.brokers")
+    gor = GeneratorOfReports('01.05.2017', '01.06.2017', 1, 'test', 'test', config)
     print('Well done!')
+    # else:
+    #     print("Not a path!!!")

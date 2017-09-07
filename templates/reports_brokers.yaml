@@ -10,10 +10,36 @@ main:
   delay: ${options['delay']}
   increment_step: ${options['increment_step']}
   decrement_step: ${options['decrement_step']}
-  host: "${options['host']}"
-  user: "${options['user']}"
-  password: "${options['password']}"
+  api_host: "${options['api_host']}"
+  api_port: "${options['api_port']}"
+  db_host: "${options['db_host']}"
+  db_port: "${options['db_port']}"
+  db_user: "${options['db_user']}"
   database: "${options['database']}"
-  charset: "${options['charset']}"
+  db_charset: "${options['db_charset']}"
   templates_dir: "${options['templates_dir']}"
   result_dir: "${options['result_dir']}"
+
+
+version: 1
+
+formatters:
+  simple:
+    format: "%(asctime)s - %(name)s:%(funcName)s - %(lineno)s  - %(levelname)s - %(message)s"
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: simple
+    stream: ext://sys.stdout
+
+loggers:
+  openprocurement.bot.identification.databridge:
+    handlers: [console]
+    propagate: no
+    level: DEBUG
+
+  "":
+    handlers: [console]
+    level: DEBUG

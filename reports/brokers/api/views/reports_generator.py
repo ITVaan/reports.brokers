@@ -34,9 +34,9 @@ class GeneratorOfReports:
         self.result_dir = self.config_get("result_dir")
 
         # DataBase connection
-        self.conn = mariadb.connect(host=self.config_get("host"), user=self.config_get("user"),
+        self.conn = mariadb.connect(host=self.config_get("db_host"), user=self.config_get("db_user"),
                                     password=get_root_pwd(), database=self.config_get("database"),
-                                    charset=self.config_get("charset"))
+                                    charset=self.config_get("db_charset"))
         self.cursor = self.conn.cursor(buffered=True)
 
         # Launching of reports generator

@@ -61,12 +61,7 @@ class TestDataBaseConnection(TestCase):
         res = cursor.execute(report1, {'start_date': '01.05.2017', 'end_date': '01.06.2017'})
         data = [[broker_name, suppliers_count] for (broker_name, suppliers_count) in cursor]
         cursor.close()
-        templates_dir = 'reports/brokers/api/views/templates'
-        result_dir = 'reports/brokers/tests/test_reports'
-        template_file_name = '1.xlsx'
-        t = os.path.splitext(template_file_name)
-        result_file = os.path.join(result_dir, t[0] + '-' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + t[1])
-        copyfile(os.path.join(templates_dir, template_file_name), result_file)
+        result_file = copy_xls_file_from_template()
         wb = load_workbook(filename=result_file)
         ws = wb.active
         row = 2

@@ -2,11 +2,11 @@
 from gevent import killall
 from mock import MagicMock, patch
 from openprocurement_client.client import TendersClient, TendersClientSync
+from utils import AlmostAlwaysTrue, custom_sleep
 from restkit import RequestError
 
 from reports.brokers.databridge.bridge import DataBridge
-from reports.brokers.databridge.tests.base import BaseServersTest, config
-from reports.brokers.databridge.tests.utils import AlmostAlwaysTrue, custom_sleep
+from reports.brokers.tests.test_databridge.base import BaseServersTest, config
 
 
 class TestBridgeWorker(BaseServersTest):

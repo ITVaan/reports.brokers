@@ -13,7 +13,7 @@ from munch import munchify
 from restkit.errors import Unauthorized, RequestFailed, ResourceError
 
 from reports.brokers.databridge.scanner import Scanner
-from reports.brokers.databridge.tests.utils import custom_sleep
+from utils import custom_sleep
 from reports.brokers.databridge.sleep_change_value import APIRateController
 
 

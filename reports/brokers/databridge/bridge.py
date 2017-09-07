@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from gevent import monkey
 
+from reports.brokers.utils import get_root_pwd
+
 monkey.patch_all()
 
 import logging
@@ -80,6 +82,11 @@ class DataBridge(object):
                                         filtered_tender_ids_queue=self.filtered_tender_ids_queue,
                                         services_not_available=self.services_not_available,
                                         sleep_change_value=self.sleep_change_value,
+                                        db_host=self.config_get("db_host"),
+                                        db_user=self.config_get("db_user"),
+                                        db_password=get_root_pwd(),
+                                        database=self.config_get("database"),
+                                        db_charset=self.config_get("db_charset"),
                                         delay=self.delay)
 
     def config_get(self, name):

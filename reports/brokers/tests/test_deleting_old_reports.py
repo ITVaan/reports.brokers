@@ -33,6 +33,6 @@ class TestReportsDeleting(TestCase):
         worker = ReportCleaner.spawn(self.sna)
         worker.result_dir = result_dir
         sleep(1)
-        self.assertFalse(os.listdir(result_dir))
+        self.assertFalse([i for i in os.listdir(result_dir) if os.path.splitext(i)[1] == '.xlsx'])
         worker.shutdown()
         del worker

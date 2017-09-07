@@ -2,11 +2,11 @@
 from gevent import killall
 from mock import MagicMock, patch
 from openprocurement_client.client import TendersClient, TendersClientSync
+from utils import AlmostAlwaysTrue, custom_sleep
 from restkit import RequestError
 
 from reports.brokers.databridge.bridge import DataBridge
 from reports.brokers.tests.test_databridge.base import BaseServersTest, config
-from reports.brokers.tests.test_databridge.utils import AlmostAlwaysTrue, custom_sleep
 
 
 class TestBridgeWorker(BaseServersTest):
@@ -14,7 +14,7 @@ class TestBridgeWorker(BaseServersTest):
         self.worker = DataBridge(config)
 
     def test_init(self):
-        self.assertEqual(self.worker.db_name, config['main']['db_name'])
+        self.assertEqual(self.worker.database, config['main']['database'])
         self.assertEqual(self.worker.delay, config['main']['delay'])
         self.assertEqual(self.worker.sleep_change_value.time_between_requests, 0)
         self.assertTrue(isinstance(self.worker.tenders_sync_client, TendersClientSync))

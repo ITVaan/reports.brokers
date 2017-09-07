@@ -1,11 +1,14 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
+import hashlib
 from unittest import TestCase
+from os import path
 
 import mysql.connector as mariadb
 from mysql.connector.constants import ClientFlag
 
 from reports.brokers.api.views.reports_generator import GeneratorOfReports
 from reports.brokers.tests.test_db_connection import execute_scripts_from_file
+from reports.brokers.tests.utils import test_config
 from reports.brokers.utils import get_root_pwd
 
 
@@ -39,9 +42,12 @@ class TestReportsGenerator(TestCase):
 
     def test_init(self):
         cursor = self.conn.cursor(buffered=True)
-        cursor.execute("""INSERT INTO `users` (`user_name`, `password`, `blocked`) VALUES ("test", SHA2('test', 256), 0);""")
+        password = hashlib.sha256("1234").hexdigest()
+        cursor.execute("""INSERT INTO `users` (`user_name`, `password`, `blocked`) VALUES ("Vlad", "{}", 0);""".format(
+            password))
         cursor.close()
         self.conn.commit()
-        rep_gen = GeneratorOfReports('01.05.2017', '01.06.2017', 1, 'test', 'test', "reports_data_test")
+        rep_gen = GeneratorOfReports('01.05.2017', '01.06.2017', 1, 'Vlad', '1234', test_config)
         self.assertEqual(rep_gen.report_number, 1)
-
+        self.assertEqual(rep_gen.password, password)
+        self.assertEqual(rep_gen.config, test_config)

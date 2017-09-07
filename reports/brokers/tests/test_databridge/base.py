@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-import os
+from os import path
 from bottle import Bottle, response
 from gevent.pywsgi import WSGIServer
+
+from reports.brokers.utils import get_root_pwd
 
 config = {
     'main':
@@ -16,8 +18,14 @@ config = {
             'empty_stack_sync_delay': 101,
             'on_error_sleep_delay': 5,
             'api_token': "api_token",
-            'db_name': 'reports_data',
             'delay': 1,
+            'db_user': 'root',
+            'db_password': get_root_pwd(),
+            'db_host': 'localhost',
+            'database': 'reports_data_test',
+            'db_charset': 'utf8',
+            'templates_dir': "reports/brokers/api/views/templates",
+            'result_dir': path.join(path.dirname(path.realpath(__file__)), "test_reports")
         }
 }
 
@@ -25,7 +33,7 @@ config = {
 class BaseServersTest(unittest.TestCase):
     """Api server to test reports.brokers.databridge.bridge """
 
-    relative_to = os.path.dirname(__file__)  # crafty line
+    relative_to = path.dirname(__file__)  # crafty line
 
     @classmethod
     def setUpClass(cls):

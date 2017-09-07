@@ -1,18 +1,38 @@
 # -*- coding: utf-8 -*-
+from uuid import uuid4
+
 from openpyxl import Workbook, load_workbook
 from os import path
 from shutil import copyfile
 from gevent import sleep as gsleep
+from datetime import datetime
+from reports.brokers.utils import get_root_pwd
+
+test_config = {
+    'main': {
+        'db_user': 'root',
+        'db_password': get_root_pwd(),
+        'db_host': 'localhost',
+        'database': 'reports_data_test',
+        'db_charset': 'utf8',
+        'templates_dir': "reports/brokers/api/views/templates",
+        'result_dir': path.join(path.dirname(path.realpath(__file__)), "test_reports")
+    }
+}
+
+
+def filename(report_number, user_id, file_format):
+    return "{date}_report-number={num}_{uid}_{uuid4}{ext}".format(date=datetime.now().strftime('%Y-%m-%d-%H-%M-%S'),
+                                                                  num=str(report_number),
+                                                                  uid=str(user_id),
+                                                                  uuid4=uuid4().hex, ext=file_format)
 
 
 def copy_xls_file_from_template():
-    templates_dir = 'reports/brokers/api/views/templates'
-    result_dir = 'reports/brokers/tests/test_reports'
     template_file_name = '1.xlsx'
-    file_format = path.splitext(template_file_name)
-    result_file = path.join(result_dir, '2017-08-05-17-00-00' + '_report-number=' +
-                            file_format[0] + file_format[1])
-    copyfile(path.join(templates_dir, template_file_name), result_file)
+    result_file = path.join(test_config['main']['result_dir'], filename(1, 1, ".xlsx"))
+    copyfile(path.join(test_config['main']['templates_dir'], template_file_name), result_file)
+
     return result_file
 
 

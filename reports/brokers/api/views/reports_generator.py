@@ -1,4 +1,6 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
+import argparse
+import hashlib
 import os
 import mysql.connector as mariadb
 from mysql.connector.constants import ClientFlag
@@ -7,6 +9,7 @@ from datetime import datetime
 from shutil import copyfile
 from uuid import uuid4
 from openpyxl import load_workbook
+from yaml import load
 
 from reports.brokers.utils import get_root_pwd
 from reports.brokers.api.selections import *
@@ -14,7 +17,7 @@ import hashlib
 
 
 class GeneratorOfReports:
-    def __init__(self, start_report_period, end_report_period, report_number, user_name, password, db_name):
+    def __init__(self, start_report_period, end_report_period, report_number, user_name, password, config):
         # Report period
         self.start_report_period = datetime.strptime(str(start_report_period), '%d.%m.%Y')
         self.end_report_period = datetime.strptime(str(end_report_period), '%d.%m.%Y')
@@ -23,23 +26,18 @@ class GeneratorOfReports:
         self.report_number = report_number
         self.user_name = user_name
         self.password = hashlib.sha256(password).hexdigest()
+        self.config = config
 
         self.data = []
 
         # Excel directories
-        self.templates_dir = 'reports/brokers/api/views/templates'
-        self.result_dir = 'reports/brokers/api/views/reports'
+        self.templates_dir = self.config_get("templates_dir")
+        self.result_dir = self.config_get("result_dir")
 
         # DataBase connection
-        config = {
-            'user': 'root',
-            'password': get_root_pwd(),
-            'host': 'localhost',
-            'database': db_name,
-            'charset': 'utf8'
-        }
-
-        self.conn = mariadb.connect(**config)
+        self.conn = mariadb.connect(host=self.config_get("db_host"), user=self.config_get("db_user"),
+                                    password=get_root_pwd(), database=self.config_get("database"),
+                                    charset=self.config_get("db_charset"))
         self.cursor = self.conn.cursor(buffered=True)
 
         # Launching of reports generator
@@ -54,6 +52,9 @@ class GeneratorOfReports:
         else:
             print('Permission denied')
             exit()
+
+    def config_get(self, name):
+        return self.config.get('main').get(name)
 
     def auth(self):
         self.cursor.execute(auth, {'user_name': self.user_name, 'password': self.password})
@@ -117,5 +118,8 @@ class GeneratorOfReports:
 
 
 if __name__ == '__main__':
-    gor = GeneratorOfReports('01.05.2017', '01.06.2017', 1, 'test', 'test', 'reports_data')
+    with open("/home/dtrenkenshu/PycharmProjects/reports.brokers/etc/reports_brokers.yaml") as config_file_obj:
+        config = load(config_file_obj.read())
+    os.chdir("/home/dtrenkenshu/PycharmProjects/reports.brokers")
+    gor = GeneratorOfReports('01.05.2017', '01.06.2017', 1, 'test', 'test', config)
     print('Well done!')

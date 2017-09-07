@@ -10,6 +10,7 @@ from openpyxl import load_workbook
 
 from reports.brokers.utils import get_root_pwd
 from reports.brokers.api.selections import *
+import hashlib
 
 
 class GeneratorOfReports:
@@ -21,7 +22,7 @@ class GeneratorOfReports:
         # Authentication check
         self.report_number = report_number
         self.user_name = user_name
-        self.password = password
+        self.password = hashlib.sha256(password).hexdigest()
 
         self.data = []
 

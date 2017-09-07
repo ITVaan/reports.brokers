@@ -9,6 +9,8 @@ monkey.patch_all()
 
 import re
 import mysql.connector as mariadb
+from mysql.connector.constants import ClientFlag
+from reports.brokers.utils import get_root_pwd
 from datetime import datetime
 import gevent
 import logging.config
@@ -35,6 +37,7 @@ class BaseIntegration(BaseWorker):
         self.db_charset = db_charset
         self.start_time = datetime.now()
         self.delay = delay
+        self.db_name = db_name
 
         # init clients
         self.tenders_sync_client = tenders_sync_client

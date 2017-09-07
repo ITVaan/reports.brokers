@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from datetime import datetime
 from shutil import copyfile
 from unittest import TestCase
@@ -7,10 +7,11 @@ import mysql.connector as mariadb
 import os
 import re
 from openpyxl import load_workbook
+from mysql.connector.constants import ClientFlag
 
-from reports.brokers.api.selections import report1
+from reports.brokers.api.selections import *
 from reports.brokers.tests.utils import (copy_xls_file_from_template, create_example_worksheet,
-                                         load_and_fill_result_workbook)
+                                                  load_and_fill_result_workbook)
 from reports.brokers.utils import get_root_pwd
 
 
@@ -37,7 +38,13 @@ def execute_scripts_from_file(cursor, filename):
 class TestDataBaseConnection(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.conn = mariadb.connect(host='127.0.0.1', user='root', password=get_root_pwd())
+        config = {
+            'user': 'root',
+            'password': get_root_pwd(),
+            'host': 'localhost',
+            'charset': 'utf8'
+        }
+        cls.conn = mariadb.connect(**config)
 
     @classmethod
     def tearDownClass(cls):

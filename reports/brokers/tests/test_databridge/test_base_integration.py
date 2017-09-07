@@ -135,6 +135,7 @@ class TestBaseIntegrationWorker(unittest.TestCase):
         self.assertEqual(worker.filtered_tender_ids_queue, None)
         self.assertEqual(worker.services_not_available, self.sna)
         self.assertEqual(worker.sleep_change_value.time_between_requests, 0)
+        self.assertEqual(worker.database, test_config["main"]["database"])
         self.assertEqual(worker.delay, 15)
         self.assertEqual(worker.exit, False)
         worker.shutdown()

@@ -14,6 +14,7 @@ class TestBridgeWorker(BaseServersTest):
         self.worker = DataBridge(config)
 
     def test_init(self):
+        self.assertEqual(self.worker.db_name, config['main']['database'])
         self.assertEqual(self.worker.delay, config['main']['delay'])
         self.assertEqual(self.worker.sleep_change_value.time_between_requests, 0)
         self.assertTrue(isinstance(self.worker.tenders_sync_client, TendersClientSync))

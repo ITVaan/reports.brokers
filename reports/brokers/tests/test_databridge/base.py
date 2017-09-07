@@ -16,6 +16,7 @@ config = {
             'empty_stack_sync_delay': 101,
             'on_error_sleep_delay': 5,
             'api_token': "api_token",
+            'db_name': 'reports_data',
             'delay': 1,
         }
 }

@@ -1,8 +1,8 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from openpyxl import Workbook, load_workbook
 from os import path
-from datetime import datetime
 from shutil import copyfile
+from gevent import sleep as gsleep
 
 from reports.brokers.utils import get_root_pwd
 
@@ -24,6 +24,7 @@ def copy_xls_file_from_template():
     t = path.splitext(template_file_name)
     result_file = path.join(test_config['main']['result_dir'], t[0] + '-' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + t[1])
     copyfile(path.join(test_config['main']['templates_dir'], template_file_name), result_file)
+
     return result_file
 
 
@@ -47,3 +48,7 @@ def load_and_fill_result_workbook(data, result_file):
         ws.cell(row=row, column=2, value=suppliers_count)
         row += 1
     return res
+
+
+def custom_sleep(seconds=0):
+    return gsleep(seconds=0)

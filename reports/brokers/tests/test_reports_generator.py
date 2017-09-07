@@ -4,6 +4,7 @@ from unittest import TestCase
 from os import path
 
 import mysql.connector as mariadb
+from mysql.connector.constants import ClientFlag
 
 from reports.brokers.api.views.reports_generator import GeneratorOfReports
 from reports.brokers.tests.test_db_connection import execute_scripts_from_file
@@ -14,7 +15,13 @@ from reports.brokers.utils import get_root_pwd
 class TestReportsGenerator(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.conn = mariadb.connect(host='127.0.0.1', user='root', password=get_root_pwd())
+        config = {
+            'user': 'root',
+            'password': get_root_pwd(),
+            'host': 'localhost',
+            'charset': 'utf8'
+        }
+        cls.conn = mariadb.connect(**config)
 
     @classmethod
     def tearDownClass(cls):

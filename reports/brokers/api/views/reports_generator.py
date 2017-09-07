@@ -35,10 +35,6 @@ class GeneratorOfReports:
             'user': 'root',
             'password': get_root_pwd(),
             'host': 'localhost',
-            'client_flags': [ClientFlag.SSL],
-            'ssl_ca': '/etc/mysql/ssl/ca-cert.pem',
-            'ssl_cert': '/etc/mysql/ssl/client-cert.pem',
-            'ssl_key': '/etc/mysql/ssl/client-key.pem',
             'database': db_name,
             'charset': 'utf8'
         }

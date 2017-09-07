@@ -42,10 +42,6 @@ class TestDataBaseConnection(TestCase):
             'user': 'root',
             'password': get_root_pwd(),
             'host': 'localhost',
-            'client_flags': [ClientFlag.SSL],
-            'ssl_ca': '/etc/mysql/ssl/ca-cert.pem',
-            'ssl_cert': '/etc/mysql/ssl/client-cert.pem',
-            'ssl_key': '/etc/mysql/ssl/client-key.pem',
             'charset': 'utf8'
         }
         cls.conn = mariadb.connect(**config)

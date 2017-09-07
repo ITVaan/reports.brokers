@@ -1,6 +1,7 @@
 # coding=utf-8
 import hashlib
 from unittest import TestCase
+from os import path
 
 import mysql.connector as mariadb
 
@@ -32,7 +33,7 @@ class TestReportsGenerator(TestCase):
                 'database': 'reports_data_test',
                 'charset': 'utf8',
                 'templates_dir': "reports/brokers/api/views/templates",
-                'result_dir': "reports/reports"
+                'result_dir': path.join(path.dirname(path.realpath(__file__)), "test_reports")
             }
         }
         cursor.close()

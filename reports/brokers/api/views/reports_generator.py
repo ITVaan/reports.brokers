@@ -33,8 +33,6 @@ class GeneratorOfReports:
         self.templates_dir = self.config_get("templates_dir")
         self.result_dir = self.config_get("result_dir")
 
-        self.deleting_old_reports()
-
         # DataBase connection
         self.conn = mariadb.connect(host=self.config_get("host"), user=self.config_get("user"),
                                     password=get_root_pwd(), database=self.config_get("database"),
@@ -80,13 +78,6 @@ class GeneratorOfReports:
                                                                       uid=str(self.user_id),
                                                                       uuid4=uuid4().hex, ext=t[1])
 
-    def deleting_old_reports(self):
-        for file in os.listdir(self.result_dir):
-            file_date = datetime.strptime(str(file.split('_report-number=')[0]), '%Y-%m-%d-%H-%M-%S')
-            now = datetime.now()
-            delta = now - file_date
-            if delta.days >= 1:
-                os.remove(os.path.abspath(os.path.join(self.result_dir, file)))
 
     def get_path_from_hash(self, hash_file):
         for file in os.listdir(self.result_dir):
@@ -112,10 +103,6 @@ class GeneratorOfReports:
 
 
 if __name__ == '__main__':
-    # parser = argparse.ArgumentParser(description='reports_brokers')
-    # parser.add_argument('config', type=str, help='Path to configuration file')
-    # params = parser.parse_args()
-    # if os.path.isfile(params.config):
     with open("/home/dtrenkenshu/PycharmProjects/reports.brokers/etc/reports_brokers.yaml") as config_file_obj:
         config = load(config_file_obj.read())
     os.chdir("/home/dtrenkenshu/PycharmProjects/reports.brokers")

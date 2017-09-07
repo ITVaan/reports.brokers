@@ -56,6 +56,7 @@ class DataBridge(object):
         self.increment_step = self.config_get('increment_step') or 1
         self.decrement_step = self.config_get('decrement_step') or 1
         self.sleep_change_value = APIRateController(self.increment_step, self.decrement_step)
+        self.db_name = self.config_get('db_name') or None
 
         # init clients
         self.tenders_sync_client = TendersClientSync('', host_url=ro_api_server, api_version=self.api_version)
@@ -80,6 +81,7 @@ class DataBridge(object):
                                         filtered_tender_ids_queue=self.filtered_tender_ids_queue,
                                         services_not_available=self.services_not_available,
                                         sleep_change_value=self.sleep_change_value,
+                                        db_name=self.db_name,
                                         delay=self.delay)
 
     def config_get(self, name):

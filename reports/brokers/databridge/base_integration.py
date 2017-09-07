@@ -8,6 +8,8 @@ monkey.patch_all()
 
 import re
 import mysql.connector as mariadb
+from mysql.connector.constants import ClientFlag
+from reports.brokers.utils import get_root_pwd
 from datetime import datetime
 import gevent
 import logging.config
@@ -25,10 +27,11 @@ class BaseIntegration(BaseWorker):
     """ Data Bridge """
 
     def __init__(self, tenders_sync_client, filtered_tender_ids_queue, services_not_available, sleep_change_value,
-                 delay=15):
+                 db_name, delay=15):
         super(BaseIntegration, self).__init__(services_not_available)
         self.start_time = datetime.now()
         self.delay = delay
+        self.db_name = db_name
 
         # init clients
         self.tenders_sync_client = tenders_sync_client
@@ -72,8 +75,19 @@ class BaseIntegration(BaseWorker):
             tender_json = munchify(loads(response.body_string()))
         logger.info('Get tender {} from filtered_tender_ids_queue'.format(tender_id))
 
-        conn = mariadb.connect(host='localhost', user='root', password='root', database='reports_data',
-                               charset='utf8')
+        # DataBase connection
+        config = {
+            'user': 'root',
+            'password': get_root_pwd(),
+            'host': 'localhost',
+            'client_flags': [ClientFlag.SSL],
+            'ssl_ca': '/etc/mysql/ssl/ca-cert.pem',
+            'ssl_cert': '/etc/mysql/ssl/client-cert.pem',
+            'ssl_key': '/etc/mysql/ssl/client-key.pem',
+            'database': self.db_name,
+            'charset': 'utf8'
+        }
+        conn = mariadb.connect(**config)
 
         regex1 = re.compile(r'\\"', re.IGNORECASE)
         regex2 = re.compile(r'"\+\\u0.+?"', re.IGNORECASE)

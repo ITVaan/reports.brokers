@@ -15,10 +15,11 @@ logger = logging.getLogger(__name__)
 
 
 class BaseWorker(Greenlet):
-    def __init__(self, services_not_available):
+    def __init__(self, services_not_available, delay=15):
         super(BaseWorker, self).__init__()
         self.services_not_available = services_not_available
         self.exit = False
+        self.delay = delay
 
     def _start_jobs(self):
         raise NotImplemented
@@ -38,7 +39,6 @@ class BaseWorker(Greenlet):
 
     def check_and_revive_jobs(self):
         for name, job in self.immortal_jobs.items():
-            logger.info(" Is {} dead? {}".format(name, job.dead))
             if job.dead:
                 self.revive_job(name)
 

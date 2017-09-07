@@ -1,32 +1,35 @@
 # -*- coding: utf-8 -*-
 
 from gevent import monkey
+from reports.brokers.databridge.base_worker import BaseWorker
+
 monkey.patch_all()
 
 from datetime import datetime
-from gevent import Greenlet
 import gevent
+from gevent import spawn
 import os
 
-DELAY = 3600
+DELAY = 3
 
 
-class ReportCleaner(Greenlet):
-    def __init__(self):
-        super(ReportCleaner, self).__init__()
+class ReportCleaner(BaseWorker):
+    def __init__(self, services_not_available):
+        super(ReportCleaner, self).__init__(services_not_available)
         self.start_time = datetime.now()
-        self.result_dir = 'reports'
+        self.result_dir = 'reports/brokers/api/views/reports'
 
     def deleting_old_reports(self):
-        for file in os.listdir(self.result_dir):
-            if os.path.splitext(file)[1] == '.xlsx':
-                file_date = datetime.strptime(str(file.split('_report-number=')[0]), '%Y-%m-%d-%H-%M-%S')
-                now = datetime.now()
-                delta = now - file_date
-                if delta.days >= 1:
-                    os.remove(os.path.abspath(os.path.join(self.result_dir, file)))
-
-    def _run(self):
-        while True:
-            self.deleting_old_reports()
+        while not self.exit:
+            self.services_not_available.wait()
+            for file in os.listdir(self.result_dir):
+                if os.path.splitext(file)[1] == '.xlsx':
+                    file_date = datetime.strptime(str(file.split('_report-number=')[0]), '%Y-%m-%d-%H-%M-%S')
+                    now = datetime.now()
+                    delta = now - file_date
+                    if delta.days >= 1:
+                        os.remove(os.path.abspath(os.path.join(self.result_dir, file)))
             gevent.sleep(DELAY)
+
+    def _start_jobs(self):
+        return {'deleting_old_reports': spawn(self.deleting_old_reports)}

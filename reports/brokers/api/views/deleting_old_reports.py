@@ -27,7 +27,7 @@ class ReportCleaner(BaseWorker):
                     file_date = datetime.strptime(str(file.split('_report-number=')[0]), '%Y-%m-%d-%H-%M-%S')
                     now = datetime.now()
                     delta = now - file_date
-                    if delta.days >= 1:
+                    if delta.days >= 0:
                         os.remove(os.path.abspath(os.path.join(self.result_dir, file)))
             gevent.sleep(DELAY)
 

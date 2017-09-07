@@ -96,7 +96,6 @@ class TestDataBaseConnection(TestCase):
                                        'end_date': datetime.strptime('04.09.2017', '%d.%m.%Y')})
         data = [[broker_name, suppliers_count] for (broker_name, suppliers_count) in cursor]
         cursor.close()
-
         result_file = copy_xls_file_from_template()
         wb = load_and_fill_result_workbook(data, result_file)
         ws = wb.active

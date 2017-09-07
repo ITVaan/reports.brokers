@@ -43,10 +43,10 @@ class BaseWorker(Greenlet):
                 self.revive_job(name)
 
     def revive_job(self, name):
-        logger.warning("{} dead try restart".format(name), extra=journal_context(
-            {"MESSAGE_ID": 'DATABRIDGE_RESTART_{}'.format(name.lower())}, {}))
+        # logger.warning("{} dead try restart".format(name), extra=journal_context(
+        #     {"MESSAGE_ID": 'DATABRIDGE_RESTART_{}'.format(name.lower())}, {}))
         self.immortal_jobs[name] = gevent.spawn(getattr(self, name))
-        logger.info("{} is up".format(name))
+        # logger.info("{} is up".format(name))
 
     def shutdown(self):
         self.exit = True

@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+from uuid import uuid4
+
 from openpyxl import Workbook, load_workbook
 from os import path
 from shutil import copyfile
 from gevent import sleep as gsleep
-
+from datetime import datetime
 from reports.brokers.utils import get_root_pwd
 
 test_config = {
@@ -19,10 +21,16 @@ test_config = {
 }
 
 
+def filename(report_number, user_id, file_format):
+    return "{date}_report-number={num}_{uid}_{uuid4}{ext}".format(date=datetime.now().strftime('%Y-%m-%d-%H-%M-%S'),
+                                                                  num=str(report_number),
+                                                                  uid=str(user_id),
+                                                                  uuid4=uuid4().hex, ext=file_format)
+
+
 def copy_xls_file_from_template():
     template_file_name = '1.xlsx'
-    t = path.splitext(template_file_name)
-    result_file = path.join(test_config['main']['result_dir'], t[0] + '-' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + t[1])
+    result_file = path.join(test_config['main']['result_dir'], filename(1, 1, ".xlsx"))
     copyfile(path.join(test_config['main']['templates_dir'], template_file_name), result_file)
 
     return result_file

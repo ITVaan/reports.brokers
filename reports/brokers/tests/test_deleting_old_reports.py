@@ -9,7 +9,7 @@ from mock import patch
 from time import sleep
 from unittest import TestCase
 from reports.brokers.api.views.deleting_old_reports import ReportCleaner
-from reports.brokers.tests.utils import custom_sleep
+from reports.brokers.tests.utils import custom_sleep, test_config
 
 
 class TestReportsDeleting(TestCase):
@@ -27,7 +27,7 @@ class TestReportsDeleting(TestCase):
     @patch('gevent.sleep')
     def test_deleting(self, gevent_sleep):
         gevent_sleep.side_effect = custom_sleep
-        result_dir = 'reports/brokers/tests/test_reports'
+        result_dir = test_config["main"]["result_dir"]
         result_file = os.path.join(result_dir, '2017-08-05-17-00-00_report-number=1.xlsx')
         open(result_file, 'a').close()
         worker = ReportCleaner.spawn(self.sna)

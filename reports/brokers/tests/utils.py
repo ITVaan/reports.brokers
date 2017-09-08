@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
+from shutil import copyfile
 from uuid import uuid4
 
+from gevent import sleep as gsleep
 from openpyxl import Workbook, load_workbook
 from os import path
-from shutil import copyfile
-from gevent import sleep as gsleep
-from datetime import datetime
+
 from reports.brokers.utils import get_root_pwd
 
 test_config = {
-    'main': {
         'db_user': 'root',
         'db_password': get_root_pwd(),
         'db_host': 'localhost',
@@ -17,8 +17,12 @@ test_config = {
         'db_charset': 'utf8',
         'templates_dir': "reports/brokers/api/views/templates",
         'result_dir': path.join(path.dirname(path.realpath(__file__)), "test_reports")
-    }
+
 }
+
+
+def from_config(name):
+    return test_config.get(name)
 
 
 def filename(report_number, user_id, file_format):
@@ -30,8 +34,8 @@ def filename(report_number, user_id, file_format):
 
 def copy_xls_file_from_template():
     template_file_name = '1.xlsx'
-    result_file = path.join(test_config['main']['result_dir'], filename(1, 1, ".xlsx"))
-    copyfile(path.join(test_config['main']['templates_dir'], template_file_name), result_file)
+    result_file = path.join(test_config['result_dir'], filename(1, 1, ".xlsx"))
+    copyfile(path.join(test_config['templates_dir'], template_file_name), result_file)
 
     return result_file
 

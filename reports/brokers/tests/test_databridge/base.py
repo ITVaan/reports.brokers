@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-from os import path
 from bottle import Bottle, response
 from gevent.pywsgi import WSGIServer
+from os import path
 
 from reports.brokers.utils import get_root_pwd
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from gevent import monkey
 
-from reports.brokers.tests.utils import test_config
+from reports.brokers.tests.utils import from_config
 from reports.brokers.utils import get_root_pwd
 
 monkey.patch_all()
@@ -81,11 +81,11 @@ class TestBaseIntegrationWorker(unittest.TestCase):
         self.sna.set()
         self.worker = BaseIntegration.spawn(self.client, self.filtered_tender_ids_queue, self.sna,
                                             self.sleep_change_value,
-                                            db_host=test_config["main"]["db_host"],
-                                            db_user=test_config["main"]["db_user"],
+                                            db_host=from_config("db_host"),
+                                            db_user=from_config("db_user"),
                                             db_password=get_root_pwd(),
-                                            database=test_config["main"]["database"],
-                                            db_charset=test_config["main"]["db_charset"])
+                                            database=from_config("database"),
+                                            db_charset=from_config("db_charset"))
         self.bid_ids = [uuid.uuid4().hex for _ in range(5)]
         self.qualification_ids = [uuid.uuid4().hex for _ in range(5)]
         self.award_ids = [uuid.uuid4().hex for _ in range(5)]
@@ -125,17 +125,17 @@ class TestBaseIntegrationWorker(unittest.TestCase):
 
     def test_init(self):
         worker = BaseIntegration.spawn(None, None, self.sna, self.sleep_change_value,
-                                       db_host=test_config["main"]["db_host"],
-                                       db_user=test_config["main"]["db_user"],
+                                       db_host=from_config("db_host"),
+                                       db_user=from_config("db_user"),
                                        db_password=get_root_pwd(),
-                                       database=test_config["main"]["database"],
-                                       db_charset=test_config["main"]["db_charset"])
+                                       database=from_config("database"),
+                                       db_charset=from_config("db_charset"))
         self.assertGreater(datetime.datetime.now().isoformat(), worker.start_time.isoformat())
         self.assertEqual(worker.tenders_sync_client, None)
         self.assertEqual(worker.filtered_tender_ids_queue, None)
         self.assertEqual(worker.services_not_available, self.sna)
         self.assertEqual(worker.sleep_change_value.time_between_requests, 0)
-        self.assertEqual(worker.database, test_config["main"]["database"])
+        self.assertEqual(worker.database, from_config("database"))
         self.assertEqual(worker.delay, 15)
         self.assertEqual(worker.exit, False)
         worker.shutdown()

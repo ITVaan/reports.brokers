@@ -3,14 +3,11 @@
 from gevent import monkey
 
 from reports.brokers.databridge.base_worker import BaseWorker
-from reports.brokers.utils import get_root_pwd
 
 monkey.patch_all()
 
 import re
 import mysql.connector as mariadb
-from mysql.connector.constants import ClientFlag
-from reports.brokers.utils import get_root_pwd
 from datetime import datetime
 import gevent
 import logging.config
@@ -28,7 +25,7 @@ class BaseIntegration(BaseWorker):
     """ Data Bridge """
 
     def __init__(self, tenders_sync_client, filtered_tender_ids_queue, services_not_available, sleep_change_value,
-                 db_host, db_user, db_password, database, db_charset,delay=15):
+                 db_host, db_user, db_password, database, db_charset, delay=15):
         super(BaseIntegration, self).__init__(services_not_available)
         self.db_host = db_host
         self.db_user = db_user
@@ -73,7 +70,6 @@ class BaseIntegration(BaseWorker):
             else:
                 self.process_items_and_move(response, tender_id)
             gevent.sleep(self.sleep_change_value.time_between_requests)
-
 
     def process_items_and_move(self, response, tender_id):
         self.sleep_change_value.decrement()

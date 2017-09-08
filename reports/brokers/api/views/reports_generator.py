@@ -12,6 +12,9 @@ from yaml import load
 from reports.brokers.api.selections import *
 from reports.brokers.utils import get_root_pwd
 
+from logging import getLogger
+LOGGER = getLogger("{}.init".format(__name__))
+
 
 class GeneratorOfReports(object):
     def __init__(self, start_report_period, end_report_period, report_number, user_name, password, config):
@@ -34,12 +37,14 @@ class GeneratorOfReports(object):
         # DataBase connection
         self.conn = mariadb.connect(host=self.config_get("db_host"), user=self.config_get("db_user"),
                                     password=get_root_pwd(), database=self.config_get("database"),
-                                    charset=self.config_get("db_charset"))
+                                    charset=self.config_get("db_charset") or 'utf8')
         self.cursor = self.conn.cursor(buffered=True)
 
         # Launching of reports generator
         self.user_id = self.auth()
         if self.user_id:
+            self.date = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+            self.uuid = uuid4().hex
             self.start_reporting()
             self.logging()
             self.conn.commit()
@@ -51,7 +56,8 @@ class GeneratorOfReports(object):
             exit()
 
     def config_get(self, name):
-        return self.config.get('main').get(name)
+        return self.config.get(name)
+        # return self.config.get('main').get(name)
 
     def auth(self):
         self.cursor.execute(auth, {'user_name': self.user_name, 'password': self.password})
@@ -61,6 +67,8 @@ class GeneratorOfReports(object):
 
     def start_reporting(self):
         # Report file creation
+        LOGGER.info("Start reporting")
+
         template_file_name = '{}.xlsx'.format(self.report_number)
         file_format = os.path.splitext(template_file_name)[1]
         self.result_file = os.path.join(self.result_dir, self.filename(file_format))
@@ -69,13 +77,14 @@ class GeneratorOfReports(object):
         self.ws = self.wb.active
 
         # Start
-        if self.report_number == 1:
+        LOGGER.info("Start reporting 2: rep_number={}; type {}".format(self.report_number, type(self.report_number)))
+        if self.report_number == '1':
             self.cursor.execute(report1, {'start_date': self.start_report_period, 'end_date': self.end_report_period})
             self.report_1()
-        elif self.report_number == 2:
+        elif self.report_number == '2':
             self.cursor.execute(report2, {'start_date': self.start_report_period, 'end_date': self.end_report_period})
             self.report_2()
-        elif self.report_number == 3:
+        elif self.report_number == '3':
             self.cursor.execute(report3, {'start_date': self.start_report_period, 'end_date': self.end_report_period})
             self.report_3()
 
@@ -86,10 +95,10 @@ class GeneratorOfReports(object):
                                       'end_report_period': self.end_report_period})
 
     def filename(self, file_format):
-        return "{date}_report-number={num}_{uid}_{uuid4}{ext}".format(date=datetime.now().strftime('%Y-%m-%d-%H-%M-%S'),
+        return "{date}_report_number_{num}_{uid}_{uuid4}{ext}".format(date=self.date,
                                                                       num=str(self.report_number),
                                                                       uid=str(self.user_id),
-                                                                      uuid4=uuid4().hex, ext=file_format)
+                                                                      uuid4=self.uuid, ext=file_format)
 
     def get_path_from_hash(self, hash_file):
         for file in os.listdir(self.result_dir):
@@ -99,6 +108,7 @@ class GeneratorOfReports(object):
         return 'Wrong hash or this file is deleted!'
 
     def report_1(self):
+        LOGGER.info("report 1")
         for broker_name, suppliers_count in self.cursor:
             self.data.append([broker_name, suppliers_count])
         row = 2

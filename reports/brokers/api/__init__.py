@@ -45,6 +45,6 @@ def main(global_config, **settings):
     config.add_subscriber(set_renderer, NewRequest)
     # Include views
     config.add_route('health', '/health')
+    config.add_route('report', '/report')
     config.scan("reports.brokers.api.views")
-    config.scan("views")
     return config.make_wsgi_app()

@@ -1,10 +1,8 @@
 # coding=utf-8
 import hashlib
 from unittest import TestCase
-from os import path
 
 import mysql.connector as mariadb
-from mysql.connector.constants import ClientFlag
 
 from reports.brokers.api.views.reports_generator import GeneratorOfReports
 from reports.brokers.tests.test_db_connection import execute_scripts_from_file

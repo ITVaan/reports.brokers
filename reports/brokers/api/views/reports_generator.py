@@ -1,22 +1,19 @@
 # coding=utf-8
-import argparse
 import hashlib
-import os
-import mysql.connector as mariadb
-from mysql.connector.constants import ClientFlag
-
 from datetime import datetime
 from shutil import copyfile
 from uuid import uuid4
+
+import mysql.connector as mariadb
+import os
 from openpyxl import load_workbook
 from yaml import load
 
-from reports.brokers.utils import get_root_pwd
 from reports.brokers.api.selections import *
-import hashlib
+from reports.brokers.utils import get_root_pwd
 
 
-class GeneratorOfReports:
+class GeneratorOfReports(object):
     def __init__(self, start_report_period, end_report_period, report_number, user_name, password, config):
         # Report period
         self.start_report_period = datetime.strptime(str(start_report_period), '%d.%m.%Y')

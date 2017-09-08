@@ -1,3 +1,4 @@
+# coding=utf-8
 DATABRIDGE_START = "bridge_start"
 DATABRIDGE_RESTART = "bridge_restart"
 DATABRIDGE_GET_EXTRA_INFO = "bridge_get_credentials"

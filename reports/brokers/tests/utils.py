@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
+from shutil import copyfile
 from uuid import uuid4
 
+from gevent import sleep as gsleep
 from openpyxl import Workbook, load_workbook
 from os import path
-from shutil import copyfile
-from gevent import sleep as gsleep
-from datetime import datetime
+
 from reports.brokers.utils import get_root_pwd
 
 test_config = {

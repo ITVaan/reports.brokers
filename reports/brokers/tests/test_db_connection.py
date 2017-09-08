@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
-from shutil import copyfile
-from unittest import TestCase
-
-import mysql.connector as mariadb
-import os
 import re
+import mysql.connector as mariadb
+
+from datetime import datetime
+from unittest import TestCase
 from openpyxl import load_workbook
-from mysql.connector.constants import ClientFlag
 
 from reports.brokers.api.selections import *
 from reports.brokers.tests.utils import (copy_xls_file_from_template, create_example_worksheet,
-                                                  load_and_fill_result_workbook)
+                                         load_and_fill_result_workbook)
 from reports.brokers.utils import get_root_pwd
 
 

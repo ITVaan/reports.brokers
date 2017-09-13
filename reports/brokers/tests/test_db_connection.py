@@ -9,7 +9,6 @@ from openpyxl import load_workbook
 from reports.brokers.api.selections import *
 from reports.brokers.tests.utils import (copy_xls_file_from_template, create_example_worksheet,
                                          load_and_fill_result_workbook)
-from reports.brokers.utils import get_root_pwd
 
 
 def execute_scripts_from_file(cursor, filename):
@@ -37,7 +36,7 @@ class TestDataBaseConnection(TestCase):
     def setUpClass(cls):
         config = {
             'user': 'root',
-            'password': get_root_pwd(),
+            'password': 'root',
             'host': 'localhost',
             'charset': 'utf8'
         }

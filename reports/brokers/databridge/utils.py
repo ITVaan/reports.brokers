@@ -7,12 +7,7 @@ from restkit import ResourceError
 
 LOGGER = getLogger(__name__)
 
-Data = namedtuple('Data', ['tender_id',  # tender ID
-                           'item_id',  # qualification or award ID
-                           'code',  # EDRPOU, IPN or passport
-                           'item_name',  # "qualifications" or "awards"
-                           'file_content'  # details for file
-                           ])
+EdrDocument = namedtuple("EdrDocument", ['tender_id', 'bid_id', 'document_url'])
 
 
 def journal_context(record={}, params={}):

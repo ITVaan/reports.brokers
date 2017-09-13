@@ -44,8 +44,8 @@ def create_example_worksheet():
     wb_expected = Workbook()
     ws_expected = wb_expected.active
     ws_expected.title = u"Лист1"
-    ws_expected.cell(row=1, column=1, value="Площадка")
-    ws_expected.cell(row=1, column=2, value="Кількість нових учасників")
+    ws_expected.cell(row=1, column=1, value="Broker")
+    ws_expected.cell(row=1, column=2, value="Number of new suppliers")
     ws_expected.cell(row=2, column=1, value="prom.ua")
     ws_expected.cell(row=2, column=2, value=1)
     return ws_expected

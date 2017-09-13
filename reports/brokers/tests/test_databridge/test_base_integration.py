@@ -78,14 +78,15 @@ def generate_response():
 class TestBaseIntegrationWorker(unittest.TestCase):
     def setUp(self):
         self.filtered_tender_ids_queue = Queue(10)
+        self.processing_docs_queue = Queue(10)
         self.tender_id = uuid.uuid4().hex
         self.filtered_tender_ids_queue.put(self.tender_id)
         self.sleep_change_value = APIRateController()
         self.client = MagicMock()
         self.sna = event.Event()
         self.sna.set()
-        self.worker = BaseIntegration.spawn(self.client, self.filtered_tender_ids_queue, self.sna,
-                                            self.sleep_change_value,
+        self.worker = BaseIntegration.spawn(self.client, self.filtered_tender_ids_queue, self.processing_docs_queue,
+                                            self.sna, self.sleep_change_value,
                                             db_host=from_config("db_host"),
                                             db_user=from_config("db_user"),
                                             db_password=get_root_pwd(),
@@ -101,7 +102,7 @@ class TestBaseIntegrationWorker(unittest.TestCase):
         del self.worker
 
     def test_init(self):
-        worker = BaseIntegration.spawn(None, None, self.sna, self.sleep_change_value,
+        worker = BaseIntegration.spawn(None, None, None, self.sna, self.sleep_change_value,
                                        db_host=from_config("db_host"),
                                        db_user=from_config("db_user"),
                                        db_password=get_root_pwd(),
@@ -110,6 +111,7 @@ class TestBaseIntegrationWorker(unittest.TestCase):
         self.assertGreater(datetime.datetime.now().isoformat(), worker.start_time.isoformat())
         self.assertEqual(worker.tenders_sync_client, None)
         self.assertEqual(worker.filtered_tender_ids_queue, None)
+        self.assertEqual(worker.processing_docs_queue, None)
         self.assertEqual(worker.services_not_available, self.sna)
         self.assertEqual(worker.sleep_change_value.time_between_requests, 0)
         self.assertEqual(worker.database, from_config("database"))
@@ -140,6 +142,7 @@ class TestBaseIntegrationWorker(unittest.TestCase):
         self.assertEqual(self.worker.sleep_change_value.time_between_requests, 2)
         gevent_sleep.assert_called_with_once(1)
         self.assertEqual(self.filtered_tender_ids_queue.qsize(), 0)
+        self.assertEqual(self.processing_docs_queue.qsize(), 0)
 
     @patch('gevent.sleep')
     def test_get_tender(self, gevent_sleep):
@@ -149,6 +152,7 @@ class TestBaseIntegrationWorker(unittest.TestCase):
         self.assertEqual(self.worker.sleep_change_value.time_between_requests, 0)
         gevent_sleep.assert_called_with_once(1)
         self.assertEqual(self.filtered_tender_ids_queue.qsize(), 0)
+        self.assertEqual(self.processing_docs_queue.qsize(), 0)
 
     @patch('gevent.sleep')
     def test_get_tender_exception(self, gevent_sleep):
@@ -158,3 +162,4 @@ class TestBaseIntegrationWorker(unittest.TestCase):
         self.assertEqual(self.worker.sleep_change_value.time_between_requests, 0)
         gevent_sleep.assert_called_with_once(1)
         self.assertEqual(self.filtered_tender_ids_queue.qsize(), 0)
+        self.assertEqual(self.processing_docs_queue.qsize(), 0)

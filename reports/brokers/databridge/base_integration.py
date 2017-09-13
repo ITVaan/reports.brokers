@@ -15,7 +15,7 @@ from gevent import spawn
 from gevent.hub import LoopExit
 from munch import munchify
 from simplejson import loads
-from reports.brokers.databridge.utils import journal_context
+from reports.brokers.databridge.utils import journal_context, EdrDocument
 from restkit.errors import ResourceError
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 class BaseIntegration(BaseWorker):
     """ Data Bridge """
 
-    def __init__(self, tenders_sync_client, filtered_tender_ids_queue, services_not_available, sleep_change_value,
+    def __init__(self, tenders_sync_client, filtered_tender_ids_queue, processing_docs_queue, services_not_available, sleep_change_value,
                  db_host, db_user, db_password, database, db_charset, delay=15):
         super(BaseIntegration, self).__init__(services_not_available)
         self.db_host = db_host
@@ -40,6 +40,7 @@ class BaseIntegration(BaseWorker):
 
         # init queues for workers
         self.filtered_tender_ids_queue = filtered_tender_ids_queue
+        self.processing_docs_queue = processing_docs_queue
 
         # blockers
         self.sleep_change_value = sleep_change_value
@@ -51,7 +52,7 @@ class BaseIntegration(BaseWorker):
             try:
                 tender_id = self.filtered_tender_ids_queue.get()
             except LoopExit:
-                gevent.sleep(0)
+                gevent.sleep()
                 continue
             try:
                 response = self.tenders_sync_client.request("GET",
@@ -78,15 +79,32 @@ class BaseIntegration(BaseWorker):
                 self.process_items_and_move(response, tender_id)
             gevent.sleep(self.sleep_change_value.time_between_requests)
 
+    def processing_docs(self, tender_data):
+        tender_id = tender_data['id']
+        if 'awards' in tender_data:
+            for aw in tender_data['awards']:
+                if 'documents' in aw:
+                    for doc in aw['documents']:
+                        doc_url = doc['url']
+                        if 'bid_id' in aw:
+                            bid_id = aw['bid_id']
+                            self.processing_docs_queue.put(EdrDocument(tender_id, bid_id, doc_url))
+                            logger.info('Processing_docs data: {}'.format(EdrDocument(tender_id, bid_id, doc_url)))
+                        else:
+                            logger.info('Tender {} award {} has no bidID'.format(tender_id, aw['id']))
+                else:
+                    logger.info('Tender {} award {} has no documents'.format(tender_id, aw['id']))
+        else:
+            logger.info('Tender {} has no awards'.format(tender_id))
+
     def process_items_and_move(self, response, tender_id):
         self.sleep_change_value.decrement()
         if response.status_int == 200:
-            tender_json = munchify(loads(response.body_string()))
+            tender_json = munchify(loads(response.body_string().decode("utf-8")))
             tender_data = tender_json['data']
-            json_to_str = json.dumps(tender_json, ensure_ascii=False)
-
+            self.processing_docs(tender_data)
+            json_to_str = json.dumps(tender_data)
             logger.info('Get tender {} from filtered_tender_ids_queue'.format(tender_id))
-
             conn = mariadb.connect(host=self.db_host, user=self.db_user, password=self.db_password,
                                    database=self.database, charset=self.db_charset)
             cursor = conn.cursor(buffered=False)

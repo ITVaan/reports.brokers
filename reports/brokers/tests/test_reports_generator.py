@@ -7,6 +7,7 @@ import mysql.connector as mariadb
 from reports.brokers.api.views.reports_generator import GeneratorOfReports
 from reports.brokers.tests.test_db_connection import execute_scripts_from_file
 from reports.brokers.tests.utils import test_config
+from reports.brokers.utils import get_root_pwd
 import uuid
 
 
@@ -15,7 +16,7 @@ class TestReportsGenerator(TestCase):
     def setUpClass(cls):
         config = {
             'user': 'root',
-            'password': 'root',
+            'password': get_root_pwd(),
             'host': 'localhost',
             'charset': 'utf8'
         }

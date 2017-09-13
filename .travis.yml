@@ -10,7 +10,7 @@ cache:
   directories:
     - eggs
 before_install:
-  - pip install setuptools==7.0
+  - pip install setuptools
   - python2 bootstrap.py --buildout-version 2.2.5
 services: mariadb
 install:

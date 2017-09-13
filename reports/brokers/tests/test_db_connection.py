@@ -1,64 +1,15 @@
 # -*- coding: utf-8 -*-
-import re
-import mysql.connector as mariadb
 
 from datetime import datetime
-from unittest import TestCase
 from openpyxl import load_workbook
 
 from reports.brokers.api.selections import *
+from reports.brokers.tests.base_db_test import BaseDbTestCase
 from reports.brokers.tests.utils import (copy_xls_file_from_template, create_example_worksheet,
                                          load_and_fill_result_workbook)
-from reports.brokers.utils import get_root_pwd
 
 
-def execute_scripts_from_file(cursor, filename):
-    # Open and read the file as a single buffer
-    fd = open(filename, 'r')
-    sql_file = fd.read()
-    fd.close()
-    # Find special delimiters
-    delimiters = re.compile('DELIMITER *(\S*)', re.I)
-    result = delimiters.split(sql_file)
-    # Insert default delimiter and separate delimiters and sql
-    result.insert(0, ';')
-    delimiter = result[0::2]
-    section = result[1::2]
-    for i in range(len(delimiter)):
-        queries = section[i].split(delimiter[i])
-        for query in queries:
-            if not query.strip():
-                continue
-            cursor.execute(query)
-
-
-class TestDataBaseConnection(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        config = {
-            'user': 'root',
-            'password': get_root_pwd(),
-            'host': 'localhost',
-            'charset': 'utf8'
-        }
-        cls.conn = mariadb.connect(**config)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.conn.close()
-
-    def setUp(self):
-        cursor = self.conn.cursor(buffered=True)
-        cursor.execute("""DROP DATABASE IF EXISTS reports_data_test;""")
-        cursor.execute("""CREATE DATABASE IF NOT EXISTS reports_data_test;""")
-        cursor.execute("""USE reports_data_test""")
-        execute_scripts_from_file(cursor, "reports/brokers/database/reports_data_dev.sql")
-        cursor.close()
-
-    def tearDown(self):
-        cursor = self.conn.cursor(buffered=True)
-        cursor.execute("""DROP DATABASE IF EXISTS reports_data_test;""")
-        cursor.close()
+class TestDataBaseConnection(BaseDbTestCase):
 
     def test_create_empty_xls(self):
         cursor = self.conn.cursor(buffered=True)

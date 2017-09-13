@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 from gevent import monkey
-
-from reports.brokers.utils import get_root_pwd
-
 monkey.patch_all()
 
 import logging
@@ -23,6 +20,7 @@ from openprocurement_client.client import TendersClientSync as BaseTendersClient
 from reports.brokers.databridge.scanner import Scanner
 from reports.brokers.databridge.base_integration import BaseIntegration
 from reports.brokers.databridge.utils import journal_context, check_412
+from reports.brokers.utils import get_root_pwd
 from reports.brokers.databridge.journal_msg_ids import (DATABRIDGE_RESTART_WORKER, DATABRIDGE_START,
                                                         DATABRIDGE_DOC_SERVICE_CONN_ERROR)
 

@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+from gevent import monkey
+monkey.patch_all()
 from gevent import killall
 from mock import MagicMock, patch
 from openprocurement_client.client import TendersClient, TendersClientSync
 from restkit import RequestError
-
+from time import sleep
 from reports.brokers.databridge.bridge import DataBridge
 from reports.brokers.tests.test_databridge.base import BaseServersTest, config
 from utils import AlmostAlwaysTrue, custom_sleep
@@ -103,14 +105,14 @@ class TestBridgeWorker(BaseServersTest):
         self.worker.all_available = MagicMock(return_value=True)
         with patch('__builtin__.True', AlmostAlwaysTrue()):
             self.worker.launch()
-        gevent_sleep.assert_called_once()
+        gevent_sleep.assert_not_called()
 
     @patch("gevent.sleep")
     def test_launch_unavailable(self, gevent_sleep):
         self.worker.all_available = MagicMock(return_value=False)
         with patch('__builtin__.True', AlmostAlwaysTrue()):
             self.worker.launch()
-        gevent_sleep.assert_called_once()
+        self.assertFalse(gevent_sleep.called)
 
     def test_revive_job(self):
         self.worker._start_jobs()

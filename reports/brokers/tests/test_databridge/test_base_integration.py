@@ -140,7 +140,7 @@ class TestBaseIntegrationWorker(unittest.TestCase):
         self.sleep_change_value.decrement_step = 1
         sleep(1)
         self.assertEqual(self.worker.sleep_change_value.time_between_requests, 2)
-        gevent_sleep.assert_called_with_once(1)
+        gevent_sleep.assert_called_with(15)
         self.assertEqual(self.filtered_tender_ids_queue.qsize(), 0)
         self.assertEqual(self.processing_docs_queue.qsize(), 0)
 
@@ -150,7 +150,7 @@ class TestBaseIntegrationWorker(unittest.TestCase):
         self.client.request = MagicMock(side_effect=ResourceError())
         sleep(1)
         self.assertEqual(self.worker.sleep_change_value.time_between_requests, 0)
-        gevent_sleep.assert_called_with_once(1)
+        gevent_sleep.assert_called_with(15)
         self.assertEqual(self.filtered_tender_ids_queue.qsize(), 0)
         self.assertEqual(self.processing_docs_queue.qsize(), 0)
 
@@ -160,6 +160,6 @@ class TestBaseIntegrationWorker(unittest.TestCase):
         self.client.request = MagicMock(side_effect=Exception())
         sleep(1)
         self.assertEqual(self.worker.sleep_change_value.time_between_requests, 0)
-        gevent_sleep.assert_called_with_once(1)
+        gevent_sleep.assert_called_with(15)
         self.assertEqual(self.filtered_tender_ids_queue.qsize(), 0)
         self.assertEqual(self.processing_docs_queue.qsize(), 0)

@@ -39,7 +39,6 @@ FROM
   LEFT JOIN bids AS b ON b.tender_id = t.id
   LEFT JOIN tenderers_bids tb ON tb.bid_id = b.id
   LEFT JOIN tenderers ts on ts.id = tb.tenderer_id
-  /*
   INNER JOIN
   (
     SELECT
@@ -55,7 +54,6 @@ FROM
     GROUP BY ts.`id`
   ) AS tmp
   ON ts.`id` = tmp.tenderer_id AND t.`enquiry_start_date` = tmp.min_tender_date
-  */
   WHERE t.`enquiry_end_date` BETWEEN %(start_date)s AND %(end_date)s
   GROUP BY br.id
   ORDER BY 2 DESC

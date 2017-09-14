@@ -109,6 +109,14 @@ class GeneratorOfReports(object):
 
     def report_2(self):
         LOGGER.info("report 2")
+        for (broker_name, failed_reqs_count, sux_reqs_count) in self.cursor:
+            self.data.append((broker_name, failed_reqs_count, sux_reqs_count))
+        row = 2
+        for (broker_name, failed_reqs_count, sux_reqs_count) in self.data:
+            self.ws.cell(row=row, column=1, value=broker_name)
+            self.ws.cell(row=row, column=2, value=failed_reqs_count)
+            self.ws.cell(row=row, column=3, value=sux_reqs_count)
+            row += 1
 
     def report_3(self):
         pass

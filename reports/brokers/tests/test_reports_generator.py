@@ -76,3 +76,42 @@ class TestReportsGenerator(BaseDbTestCase):
         self.assertEqual(rep_gen.config, test_config)
         self.assertEqual(rep_gen.ws[2][1].value, 15)
         self.assertEqual(rep_gen.ws[2][2].value, 15)
+
+    def test_report_3(self):
+        date = '2017-05-02 13:00:00.000000'
+        tender_id = uuid4().hex
+        edr_ids = [str(i) for i in range(30)]
+        cursor = self.conn.cursor(buffered=True)
+        cursor.execute("""INSERT INTO `users` (`user_name`, `password`, `blocked`) VALUES ("test", "{}", 0);""".format(
+            self.password))
+        cursor.execute("""INSERT INTO `brokers` (code) VALUES ("test");""")
+        res = cursor.execute("""INSERT INTO `tenders` (`original_id`, `status_id`, `broker_id`, `date_modified`,
+                                                      `enquiry_start_date`, `enquiry_end_date`)
+                               VALUES ('{}', '5', 1, "{}", "{}", "{}");""".format(tender_id, date, date, date))
+        tender_db_id = cursor.lastrowid
+        cursor.execute(
+            """INSERT INTO `bids` (`original_id`, `tender_id`, `status_id`) VALUES ("{}", {}, 1)""".format(tender_id,
+                                                                                                           tender_db_id))
+        bid_db_id = cursor.lastrowid
+        edr_status = 1
+        for i in range(30):
+            if edr_status == 1:
+                cursor.execute(
+                    """INSERT INTO `tenderers` (`identifier`, `scheme`, `edr_status`) VALUES ({}, "UA-EDR", 1)""".
+                    format(edr_ids[i]))
+                edr_status = 0
+            else:
+                cursor.execute(
+                    """INSERT INTO `tenderers` (`identifier`, `scheme`, `edr_status`) VALUES ({}, "UA-EDR", 0)""".
+                    format(edr_ids[i]))
+                edr_status = 1
+            cursor.execute(
+                """INSERT INTO `tenderers_bids` (`tenderer_id`, `bid_id`) VALUES ({}, {})""".format(cursor.lastrowid,
+                                                                                                    bid_db_id))
+        cursor.close()
+        self.conn.commit()
+        rep_gen = GeneratorOfReports('01.05.2016', '01.06.2018', '3', 'test', 'test', test_config)
+        self.assertEqual(rep_gen.report_number, '3')
+        self.assertEqual(rep_gen.password, self.password)
+        self.assertEqual(rep_gen.config, test_config)
+        self.assertEqual(rep_gen.ws[2][1].value, u'1.00')

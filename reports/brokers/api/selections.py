@@ -30,6 +30,32 @@ FROM
 report2 = '''
 '''
 report3 = '''
+select
+  br.id, ts.id, count(b.id)
+FROM
+  tenders t
+  LEFT JOIN brokers AS br ON br.id = t.broker_id
+  LEFT JOIN bids AS b ON b.tender_id = t.id
+  LEFT JOIN tenderers_bids tb ON tb.bid_id = b.id
+  LEFT JOIN tenderers ts on ts.id = tb.tenderer_id
+  INNER JOIN
+  (
+    SELECT
+      ts.`id` AS tenderer_id, MIN(t.`enquiry_start_date`) AS min_tender_date
+    FROM tenders t
+       LEFT JOIN bids b ON b.`tender_id` = t.id
+       LEFT JOIN `tenderers_bids` tb ON tb.`bid_id` = b.id
+       LEFT JOIN tenderers ts ON ts.`id` = tb.`tenderer_id`
+    WHERE
+      ts.`id` IS NOT NULL
+      AND ts.`identifier`  IS NOT NULL
+      AND ts.`identifier` <> ''
+    GROUP BY ts.`id`
+  ) AS tmp
+  ON ts.`id` = tmp.tenderer_id AND t.`enquiry_start_date` = tmp.min_tender_date
+group by br.id, ts.id
+ORDER BY 1 DESC
+
 '''
 
 auth = '''

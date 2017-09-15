@@ -7,26 +7,26 @@ from gevent import sleep as gsleep
 from openpyxl import Workbook, load_workbook
 from os import path
 
-from reports.brokers.utils import get_root_pwd
+from reports.brokers.tests.test_databridge.base import config
 
 test_config = {
-        'db_user': 'root',
-        'db_password': get_root_pwd(),
-        'db_host': 'localhost',
-        'database': 'reports_data_test',
-        'db_charset': 'utf8',
-        'templates_dir': "reports/brokers/api/views/templates",
-        'result_dir': path.join(path.dirname(path.realpath(__file__)), "test_reports")
+    'db_user': 'root',
+    'db_password': 'root',
+    'db_host': 'localhost',
+    'database': 'reports_data_test',
+    'db_charset': 'utf8',
+    'templates_dir': "reports/brokers/api/views/templates",
+    'result_dir': path.join(path.dirname(path.realpath(__file__)), "test_reports")
 
 }
 
 
 def from_config(name):
-    return test_config.get(name)
+    return config.get('main').get(name)
 
 
 def filename(report_number, user_id, file_format):
-    return "{date}_report-number={num}_{uid}_{uuid4}{ext}".format(date=datetime.now().strftime('%Y-%m-%d-%H-%M-%S'),
+    return "{date}_report_number_{num}_{uid}_{uuid4}{ext}".format(date=datetime.now().strftime('%Y-%m-%d-%H-%M-%S'),
                                                                   num=str(report_number),
                                                                   uid=str(user_id),
                                                                   uuid4=uuid4().hex, ext=file_format)
@@ -34,8 +34,8 @@ def filename(report_number, user_id, file_format):
 
 def copy_xls_file_from_template():
     template_file_name = '1.xlsx'
-    result_file = path.join(test_config['result_dir'], filename(1, 1, ".xlsx"))
-    copyfile(path.join(test_config['templates_dir'], template_file_name), result_file)
+    result_file = path.join(test_config.get('result_dir'), filename(1, 1, ".xlsx"))
+    copyfile(path.join(test_config.get('templates_dir'), template_file_name), result_file)
 
     return result_file
 
@@ -44,8 +44,8 @@ def create_example_worksheet():
     wb_expected = Workbook()
     ws_expected = wb_expected.active
     ws_expected.title = u"Лист1"
-    ws_expected.cell(row=1, column=1, value="Площадка")
-    ws_expected.cell(row=1, column=2, value="Кількість нових учасників")
+    ws_expected.cell(row=1, column=1, value="Broker")
+    ws_expected.cell(row=1, column=2, value="Number of new suppliers")
     ws_expected.cell(row=2, column=1, value="prom.ua")
     ws_expected.cell(row=2, column=2, value=1)
     return ws_expected

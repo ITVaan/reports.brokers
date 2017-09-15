@@ -7,7 +7,6 @@ from uuid import uuid4
 import mysql.connector as mariadb
 import os
 from openpyxl import load_workbook
-from yaml import load
 
 from reports.brokers.api.selections import *
 from reports.brokers.utils import get_root_pwd
@@ -52,12 +51,10 @@ class GeneratorOfReports(object):
             self.conn.close()
             self.wb.save(self.result_file)
         else:
-            print('Permission denied')
-            exit()
+            LOGGER.info('Permission denied')
 
     def config_get(self, name):
         return self.config.get(name)
-        # return self.config.get('main').get(name)
 
     def auth(self):
         self.cursor.execute(auth, {'user_name': self.user_name, 'password': self.password})
@@ -100,13 +97,6 @@ class GeneratorOfReports(object):
                                                                       uid=str(self.user_id),
                                                                       uuid4=self.uuid, ext=file_format)
 
-    def get_path_from_hash(self, hash_file):
-        for file in os.listdir(self.result_dir):
-            pattern = file.split('_')[3].split('.')[0]
-            if pattern == hash_file:
-                return os.path.abspath(os.path.join(self.result_dir, file))
-        return 'Wrong hash or this file is deleted!'
-
     def report_1(self):
         LOGGER.info("report 1")
         for broker_name, suppliers_count in self.cursor:
@@ -118,15 +108,15 @@ class GeneratorOfReports(object):
             row += 1
 
     def report_2(self):
-        pass
+        LOGGER.info("report 2")
+        for (broker_name, failed_reqs_count, sux_reqs_count) in self.cursor:
+            self.data.append((broker_name, failed_reqs_count, sux_reqs_count))
+        row = 2
+        for (broker_name, failed_reqs_count, sux_reqs_count) in self.data:
+            self.ws.cell(row=row, column=1, value=broker_name)
+            self.ws.cell(row=row, column=2, value=failed_reqs_count)
+            self.ws.cell(row=row, column=3, value=sux_reqs_count)
+            row += 1
 
     def report_3(self):
         pass
-
-
-if __name__ == '__main__':
-    with open("/home/dtrenkenshu/PycharmProjects/reports.brokers/etc/reports_brokers.yaml") as config_file_obj:
-        config = load(config_file_obj.read())
-    os.chdir("/home/dtrenkenshu/PycharmProjects/reports.brokers")
-    gor = GeneratorOfReports('01.05.2017', '01.06.2017', 1, 'test', 'test', config)
-    print('Well done!')

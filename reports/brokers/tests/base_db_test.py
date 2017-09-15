@@ -1,4 +1,5 @@
 # coding=utf-8
+import hashlib
 import re
 from gevent import monkey
 monkey.patch_all()
@@ -45,6 +46,7 @@ class BaseDbTestCase(TestCase):
         cls.conn.close()
 
     def setUp(self):
+        self.password = hashlib.sha256("test").hexdigest()
         cursor = self.conn.cursor(buffered=True)
         cursor.execute("""DROP DATABASE IF EXISTS reports_data_test;""")
         cursor.execute("""CREATE DATABASE IF NOT EXISTS reports_data_test;""")

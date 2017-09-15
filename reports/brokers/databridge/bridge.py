@@ -64,6 +64,7 @@ class DataBridge(object):
 
         # init queues for workers
         self.filtered_tender_ids_queue = Queue(maxsize=buffers_size)  # queue of tender IDs with appropriate status
+        self.processing_docs_queue = Queue(maxsize=buffers_size)  # queue of tender IDs, bid IDs and doc. urls
 
         # blockers
         self.initialization_event = event.Event()
@@ -79,6 +80,7 @@ class DataBridge(object):
         self.base_integration = partial(BaseIntegration.spawn,
                                         tenders_sync_client=self.tenders_sync_client,
                                         filtered_tender_ids_queue=self.filtered_tender_ids_queue,
+                                        processing_docs_queue=self.processing_docs_queue,
                                         services_not_available=self.services_not_available,
                                         sleep_change_value=self.sleep_change_value,
                                         db_host=self.config_get("db_host"),
@@ -148,6 +150,7 @@ class DataBridge(object):
                 if counter == 5:
                     counter = 0
                     logger.info('Current state: Filtered tenders {}'.format(self.filtered_tender_ids_queue.qsize()))
+                    logger.info('Current state: Processing docs {}'.format(self.processing_docs_queue.qsize()))
                 counter += 1
                 self.check_and_revive_jobs()
         except KeyboardInterrupt:

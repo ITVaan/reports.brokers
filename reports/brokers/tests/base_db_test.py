@@ -62,3 +62,12 @@ class BaseDbTestCase(TestCase):
         cursor.execute("""DROP DATABASE IF EXISTS reports_data_test;""")
         cursor.close()
         test_purge()
+
+    def execute_example(self, f):
+        cursor = self.conn.cursor(buffered=True)
+        cursor.execute("""DELETE FROM `tenderers_bids`""")
+        cursor.execute("""DELETE FROM `bids`""")
+        cursor.execute("""DELETE FROM `tenderers`""")
+        cursor.execute("""DELETE FROM `tenders`""")
+        cursor.close()
+        return f()

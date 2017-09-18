@@ -12,6 +12,7 @@ from reports.brokers.tests.utils import (copy_xls_file_from_template, create_exa
 
 
 class TestDataBaseConnection(BaseDbTestCase):
+
     def test_create_empty_xls(self):
         cursor = self.conn.cursor(buffered=True)
         res = cursor.execute(report1, {'start_date': '01.05.2017', 'end_date': '01.06.2017'})
@@ -30,12 +31,6 @@ class TestDataBaseConnection(BaseDbTestCase):
     def test_create_nonempty_xls(self, start, end):
         assume(end > start)
         modified = start
-        cursor = self.conn.cursor(buffered=True)
-        cursor.execute("""DELETE FROM `tenderers_bids`""")
-        cursor.execute("""DELETE FROM `bids`""")
-        cursor.execute("""DELETE FROM `tenderers`""")
-        cursor.execute("""DELETE FROM `tenders`""")
-        cursor.close()
         cursor = self.conn.cursor(buffered=True)
         cursor.execute("""
             insert into `tenders` (`original_id`,`status_id`,`broker_id`,`date_modified`,`enquiry_start_date`,

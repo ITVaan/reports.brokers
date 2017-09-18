@@ -3,6 +3,7 @@
 from gevent import monkey
 
 from reports.brokers.databridge.base_worker import BaseWorker
+from reports.brokers.databridge.data_parser import DataParser, JSONDataParser
 
 monkey.patch_all()
 
@@ -34,7 +35,7 @@ class BaseIntegration(BaseWorker):
         self.db_charset = db_charset
         self.start_time = datetime.now()
         self.delay = delay
-
+        self.parser = JSONDataParser()
         # init clients
         self.tenders_sync_client = tenders_sync_client
 
@@ -79,36 +80,14 @@ class BaseIntegration(BaseWorker):
                 self.process_items_and_move(response, tender_id)
             gevent.sleep(self.sleep_change_value.time_between_requests)
 
-    def processing_docs(self, tender_data):
-        tender_id = tender_data['id']
-        if 'awards' in tender_data:
-            for aw in tender_data['awards']:
-                if 'documents' in aw:
-                    for doc in aw['documents']:
-                        doc_url = doc['url']
-                        if 'bid_id' in aw:
-                            bid_id = aw['bid_id']
-                            self.processing_docs_queue.put(EdrDocument(tender_id, bid_id, doc_url))
-                            logger.info('Processing_docs data: {}'.format(EdrDocument(tender_id, bid_id, doc_url)))
-                        else:
-                            logger.info('Tender {} award {} has no bidID'.format(tender_id, aw['id']))
-                else:
-                    logger.info('Tender {} award {} has no documents'.format(tender_id, aw['id']))
-        else:
-            logger.info('Tender {} has no awards'.format(tender_id))
-
     def process_items_and_move(self, response, tender_id):
         self.sleep_change_value.decrement()
         if response.status_int == 200:
-            tender_json = munchify(loads(response.body_string().decode("utf-8")))
-            tender_data = tender_json['data']
-            self.processing_docs(tender_data)
-            json_to_str = json.dumps(tender_data)
-            logger.info('Get tender {} from filtered_tender_ids_queue'.format(tender_id))
+            tender_data, tender_str = DataParser.process_items_and_move(response, tender_id)
             conn = mariadb.connect(host=self.db_host, user=self.db_user, password=self.db_password,
                                    database=self.database, charset=self.db_charset)
             cursor = conn.cursor(buffered=False)
-            cursor.callproc('sp_update_tender', (json_to_str, tender_data['dateModified'], 0, ''))
+            cursor.callproc('sp_update_tender', (tender_str, tender_data['dateModified'], 0, ''))
             if "bids" in tender_data:
                 logger.info("Tender {} got. Bids count: {}".format(tender_id, len(tender_data['bids'])))
             else:

@@ -1,6 +1,5 @@
 # coding=utf-8
 import hashlib
-
 import re
 from gevent import monkey
 monkey.patch_all()

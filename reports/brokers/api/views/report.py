@@ -16,7 +16,7 @@ class ReportView(object):
         self.ROOT_DIR = os.path.dirname(__file__)
         self.REPORTS_PATH = request.registry.settings['result_dir']
 
-    @view_config(request_method='GET')
+    @view_config(request_method='GET', permission='view')
     def generate(self):
         data = dict(self.request.GET)
 

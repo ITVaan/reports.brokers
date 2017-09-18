@@ -55,7 +55,7 @@ class TestScannerWorker(unittest.TestCase):
 
     @patch('gevent.sleep')
     def test_worker(self, gevent_sleep):
-        """ Returns tenders, check queue elements after filtering """
+        """ Returns tenders, check in_queue elements after filtering """
         gevent_sleep.side_effect = custom_sleep
         self.client.sync_tenders.side_effect = [RequestFailed(),
                                                 # worker must restart
@@ -68,7 +68,7 @@ class TestScannerWorker(unittest.TestCase):
 
     @patch('gevent.sleep')
     def test_429(self, gevent_sleep):
-        """Receive 429 status, check queue, check sleep_change_value"""
+        """Receive 429 status, check in_queue, check sleep_change_value"""
         gevent_sleep.side_effect = custom_sleep
         self.client.sync_tenders.side_effect = [self.mock_tenders("active.pre-qualification", self.tenders_id[0], 'EU'),
                                                 self.mock_tenders("active.tendering", self.tenders_id[1], 'UA'),
@@ -82,7 +82,7 @@ class TestScannerWorker(unittest.TestCase):
 
     @patch('gevent.sleep')
     def test_429_sleep_change_value(self, gevent_sleep):
-        """Three times receive 429, check queue, check sleep_change_value"""
+        """Three times receive 429, check in_queue, check sleep_change_value"""
         gevent_sleep.side_effect = custom_sleep
         self.client.sync_tenders.side_effect = [self.mock_tenders("active.pre-qualification", self.tenders_id[0], 'EU'),
                                                 self.mock_tenders("active.tendering", self.tenders_id[1], 'UA'),
@@ -157,7 +157,7 @@ class TestScannerWorker(unittest.TestCase):
 
     @patch('gevent.sleep')
     def test_resource_error(self, gevent_sleep):
-        """Raise Resource error, check queue, check sleep_change_value"""
+        """Raise Resource error, check in_queue, check sleep_change_value"""
         gevent_sleep.side_effect = custom_sleep
         self.client.sync_tenders.side_effect = [ResourceError(http_code=429),
                                                 self.mock_tenders("active.qualification", self.tenders_id[0], 'UA')]

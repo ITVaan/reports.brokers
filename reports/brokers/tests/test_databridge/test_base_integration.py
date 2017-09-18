@@ -163,3 +163,15 @@ class TestBaseIntegrationWorker(unittest.TestCase):
         gevent_sleep.assert_called_with(15)
         self.assertEqual(self.filtered_tender_ids_queue.qsize(), 0)
         self.assertEqual(self.processing_docs_queue.qsize(), 0)
+
+    @patch('gevent.sleep')
+    def test_processing_docs(self, gevent_sleep):
+        gevent_sleep.side_effect = custom_sleep
+        api_server_bottle = Bottle()
+        api_server = WSGIServer(('127.0.0.1', 20604), api_server_bottle, log=None)
+        setup_routing(api_server_bottle, response_spore)
+        setup_routing(api_server_bottle, generate_response, path='/api/2.3/tenders/{}'.format(self.tender_id))
+        api_server.start()
+        client = TendersClientSync('', host_url='http://127.0.0.1:20604', api_version='2.3')
+        self.assertEqual(client.headers['Cookie'], 'SERVER_ID={}'.format(SPORE_COOKIES))
+        api_server.stop()

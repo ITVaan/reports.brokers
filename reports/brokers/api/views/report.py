@@ -1,11 +1,11 @@
+from logging import getLogger
+
 import os
-
-
 from pyramid.response import FileResponse
 from pyramid.view import view_config, view_defaults
 
 from reports.brokers.api.views.reports_generator import GeneratorOfReports
-from logging import getLogger
+
 LOGGER = getLogger("{}.init".format(__name__))
 
 

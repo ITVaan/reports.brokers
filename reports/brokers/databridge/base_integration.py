@@ -1,23 +1,19 @@
 # -*- coding: utf-8 -*-
-
 from gevent import monkey
-
-from reports.brokers.databridge.base_worker import BaseWorker
-from reports.brokers.databridge.data_parser import DataParser, JSONDataParser
 
 monkey.patch_all()
 
-import mysql.connector as mariadb
-from datetime import datetime
-import gevent
 import logging.config
-import json
-from gevent import spawn
+import mysql.connector as mariadb
+
+from gevent import spawn, sleep
+from datetime import datetime
 from gevent.hub import LoopExit
-from munch import munchify
-from simplejson import loads
-from reports.brokers.databridge.utils import journal_context, EdrDocument
 from restkit.errors import ResourceError
+
+from reports.brokers.databridge.utils import journal_context
+from reports.brokers.databridge.base_worker import BaseWorker
+from reports.brokers.databridge.data_parser import DataParser, JSONDataParser
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +21,8 @@ logger = logging.getLogger(__name__)
 class BaseIntegration(BaseWorker):
     """ Data Bridge """
 
-    def __init__(self, tenders_sync_client, filtered_tender_ids_queue, processing_docs_queue, services_not_available, sleep_change_value,
+    def __init__(self, tenders_sync_client, filtered_tender_ids_queue, processing_docs_queue, services_not_available,
+                 sleep_change_value,
                  db_host, db_user, db_password, database, db_charset, delay=15):
         super(BaseIntegration, self).__init__(services_not_available)
         self.db_host = db_host
@@ -53,7 +50,7 @@ class BaseIntegration(BaseWorker):
             try:
                 tender_id = self.filtered_tender_ids_queue.get()
             except LoopExit:
-                gevent.sleep()
+                sleep()
                 continue
             try:
                 response = self.tenders_sync_client.request("GET",
@@ -68,30 +65,35 @@ class BaseIntegration(BaseWorker):
                     logger.warning('Fail to get tender info {}'.format(tender_id),
                                    extra=journal_context(params={"TENDER_ID": tender_id}))
                     logger.exception("Message: {}".format(reserr.message))
-                    gevent.sleep()
+                    sleep()
             except Exception as e:
                 logger.warning('Fail to get tender info {}'.format(tender_id),
                                extra=journal_context(params={"TENDER_ID": tender_id}))
                 logger.exception("Message: {}".format(e.message))
                 logger.info('Leave tender {} in tenders queue'.format(tender_id),
                             extra=journal_context(params={"TENDER_ID": tender_id}))
-                gevent.sleep()
+                sleep()
             else:
                 self.process_items_and_move(response, tender_id)
-            gevent.sleep(self.sleep_change_value.time_between_requests)
+            sleep(self.sleep_change_value.time_between_requests)
 
     def process_items_and_move(self, response, tender_id):
         self.sleep_change_value.decrement()
         if response.status_int == 200:
-            tender_data, tender_str = DataParser.process_items_and_move(response, tender_id)
-            conn = mariadb.connect(host=self.db_host, user=self.db_user, password=self.db_password,
-                                   database=self.database, charset=self.db_charset)
-            cursor = conn.cursor(buffered=False)
-            cursor.callproc('sp_update_tender', (tender_str, tender_data['dateModified'], 0, ''))
-            if "bids" in tender_data:
-                logger.info("Tender {} got. Bids count: {}".format(tender_id, len(tender_data['bids'])))
+            try:
+                tender_data, tender_str, edr_doc = DataParser.process_items_and_move(response)
+            except Exception as e:
+                logger.warning("Error while parsing tender tender. {}".format(e))
             else:
-                logger.info("Tender {} got without bids. Status: {}".format(tender_id, tender_data['status']))
+                self.processing_docs_queue.put(edr_doc)
+                conn = mariadb.connect(host=self.db_host, user=self.db_user, password=self.db_password,
+                                       database=self.database, charset=self.db_charset)
+                cursor = conn.cursor(buffered=False)
+                cursor.callproc('sp_update_tender', (tender_str, tender_data['dateModified'], 0, ''))
+                if "bids" in tender_data:
+                    logger.info("Tender {} got. Bids count: {}".format(tender_id, len(tender_data['bids'])))
+                else:
+                    logger.info("Tender {} got without bids. Status: {}".format(tender_id, tender_data['status']))
 
     def _start_jobs(self):
         return {'adding_to_db': spawn(self.adding_to_db)}

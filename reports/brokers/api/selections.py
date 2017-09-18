@@ -30,15 +30,15 @@ FROM
 
 report2 = '''
 SELECT
-  br.code as broker,
-  count(CASE WHEN ts.edr_status = 0 then ts.id end) as edr_not_exists_count,
-  count(CASE WHEN ts.edr_status = 1 then ts.id end) as edr_exists_count
+  br.code AS broker,
+  count(CASE WHEN ts.edr_status = 0 THEN ts.id END) AS edr_not_exists_count,
+  count(CASE WHEN ts.edr_status = 1 THEN ts.id END) AS edr_exists_count
 FROM
   tenders t
   LEFT JOIN brokers AS br ON br.id = t.broker_id
   LEFT JOIN bids AS b ON b.tender_id = t.id
   LEFT JOIN tenderers_bids tb ON tb.bid_id = b.id
-  LEFT JOIN tenderers ts on ts.id = tb.tenderer_id
+  LEFT JOIN tenderers ts ON ts.id = tb.tenderer_id
   INNER JOIN
   (
     SELECT
@@ -60,14 +60,14 @@ FROM
 
 '''
 report3 = '''
-select
+SELECT
   br.id, ts.id, count(b.id)
 FROM
   tenders t
   LEFT JOIN brokers AS br ON br.id = t.broker_id
   LEFT JOIN bids AS b ON b.tender_id = t.id
   LEFT JOIN tenderers_bids tb ON tb.bid_id = b.id
-  LEFT JOIN tenderers ts on ts.id = tb.tenderer_id
+  LEFT JOIN tenderers ts ON ts.id = tb.tenderer_id
   INNER JOIN
   (
     SELECT
@@ -83,7 +83,7 @@ FROM
     GROUP BY ts.`id`
   ) AS tmp
   ON ts.`id` = tmp.tenderer_id AND t.`enquiry_start_date` = tmp.min_tender_date
-group by br.id, ts.id
+GROUP BY br.id, ts.id
 ORDER BY 1 DESC
 
 '''
@@ -91,7 +91,7 @@ ORDER BY 1 DESC
 auth = '''
 SELECT id
 FROM users
-WHERE user_name=%(user_name)s AND password=password AND blocked=0
+WHERE user_name=%(user_name)s AND PASSWORD=PASSWORD AND blocked=0
 '''
 
 logging = '''

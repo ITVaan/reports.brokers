@@ -3,6 +3,7 @@ from datetime import datetime
 from shutil import copyfile
 from uuid import uuid4
 
+import os
 from gevent import sleep as gsleep
 from openpyxl import Workbook, load_workbook
 from os import path
@@ -38,6 +39,12 @@ def copy_xls_file_from_template():
     copyfile(path.join(test_config.get('templates_dir'), template_file_name), result_file)
 
     return result_file
+
+
+def test_purge():
+    for file in os.listdir(test_config.get('result_dir')):
+        if ".xls" in file or ".xlsx" in file:
+            os.remove(path.join(test_config.get('result_dir'), file))
 
 
 def create_example_worksheet():

@@ -1,12 +1,15 @@
 # coding=utf-8
-import hashlib
-import re
 from gevent import monkey
+
+from reports.brokers.tests.utils import test_purge
+
 monkey.patch_all()
+
 import mysql.connector as mariadb
 
 from unittest import TestCase
-
+from re import compile, I
+from hashlib import sha256
 from reports.brokers.utils import get_root_pwd
 
 
@@ -16,7 +19,7 @@ def execute_scripts_from_file(cursor, filename):
     sql_file = fd.read()
     fd.close()
     # Find special delimiters
-    delimiters = re.compile('DELIMITER *(\S*)', re.I)
+    delimiters = compile('DELIMITER *(\S*)', I)
     result = delimiters.split(sql_file)
     # Insert default delimiter and separate delimiters and sql
     result.insert(0, ';')
@@ -46,7 +49,7 @@ class BaseDbTestCase(TestCase):
         cls.conn.close()
 
     def setUp(self):
-        self.password = hashlib.sha256("test").hexdigest()
+        self.password = sha256("test").hexdigest()
         cursor = self.conn.cursor(buffered=True)
         cursor.execute("""DROP DATABASE IF EXISTS reports_data_test;""")
         cursor.execute("""CREATE DATABASE IF NOT EXISTS reports_data_test;""")
@@ -58,3 +61,4 @@ class BaseDbTestCase(TestCase):
         cursor = self.conn.cursor(buffered=True)
         cursor.execute("""DROP DATABASE IF EXISTS reports_data_test;""")
         cursor.close()
+        test_purge()

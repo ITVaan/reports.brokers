@@ -15,7 +15,6 @@ from time import sleep
 from gevent.pywsgi import WSGIServer
 from gevent.queue import Queue
 from mock import MagicMock, patch
-from munch import munchify
 from bottle import response
 from simplejson import dumps
 from gevent import event
@@ -23,7 +22,7 @@ from reports.brokers.tests.utils import custom_sleep
 from restkit.errors import ResourceError
 from reports.brokers.databridge.base_integration import BaseIntegration
 from reports.brokers.databridge.bridge import TendersClientSync
-from utils import generate_request_id, ResponseMock
+from utils import generate_request_id
 from reports.brokers.databridge.sleep_change_value import APIRateController
 
 SERVER_RESPONSE_FLAG = 0

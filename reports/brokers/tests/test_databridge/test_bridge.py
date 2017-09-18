@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from gevent import monkey
+
 monkey.patch_all()
 from gevent import killall
 from mock import MagicMock, patch
 from openprocurement_client.client import TendersClient, TendersClientSync
 from restkit import RequestError
-from time import sleep
 from reports.brokers.databridge.bridge import DataBridge
 from reports.brokers.tests.test_databridge.base import BaseServersTest, config
 from utils import AlmostAlwaysTrue, custom_sleep

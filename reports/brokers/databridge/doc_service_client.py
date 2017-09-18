@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-import requests
 import logging.config
 
+import requests
 from requests import RequestException
 from retrying import retry
 

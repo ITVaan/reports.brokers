@@ -3,22 +3,14 @@ from gevent import monkey
 
 monkey.patch_all()
 
-
-import re
-import mysql.connector as mariadb
 import gevent
 import logging.config
-import json
 
 from gevent import spawn
 from gevent.queue import Queue
-from gevent.hub import LoopExit
-from munch import munchify
 from simplejson import loads
-from datetime import datetime
 from requests import RequestException
 
-from reports.brokers.databridge.utils import journal_context
 from reports.brokers.databridge.base_worker import BaseWorker
 
 logger = logging.getLogger(__name__)

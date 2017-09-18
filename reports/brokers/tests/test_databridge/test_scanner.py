@@ -53,7 +53,7 @@ class TestScannerWorker(unittest.TestCase):
         self.assertEqual(self.worker.delay, 15)
         self.assertEqual(self.worker.exit, False)
 
-    @patch('gevent.sleep')
+    @patch('reports.brokers.databridge.scanner.sleep')
     def test_worker(self, gevent_sleep):
         """ Returns tenders, check in_queue elements after filtering """
         gevent_sleep.side_effect = custom_sleep
@@ -66,7 +66,7 @@ class TestScannerWorker(unittest.TestCase):
         for tender_id in self.tenders_id[0:3]:
             self.assertEqual(self.tender_queue.get(), tender_id)
 
-    @patch('gevent.sleep')
+    @patch('reports.brokers.databridge.scanner.sleep')
     def test_429(self, gevent_sleep):
         """Receive 429 status, check in_queue, check sleep_change_value"""
         gevent_sleep.side_effect = custom_sleep
@@ -80,7 +80,7 @@ class TestScannerWorker(unittest.TestCase):
             self.assertEqual(self.tender_queue.get(), tender_id)
         self.assertEqual(self.sleep_change_value.time_between_requests, 2)
 
-    @patch('gevent.sleep')
+    @patch('reports.brokers.databridge.scanner.sleep')
     def test_429_sleep_change_value(self, gevent_sleep):
         """Three times receive 429, check in_queue, check sleep_change_value"""
         gevent_sleep.side_effect = custom_sleep
@@ -97,7 +97,7 @@ class TestScannerWorker(unittest.TestCase):
             self.assertEqual(self.tender_queue.get(), tender_id)
         self.assertEqual(self.sleep_change_value.time_between_requests, 0)
 
-    @patch('gevent.sleep')
+    @patch('reports.brokers.databridge.scanner.sleep')
     def test_backward_dead(self, gevent_sleep):
         """Test when backward dies """
         gevent_sleep.side_effect = custom_sleep
@@ -110,7 +110,7 @@ class TestScannerWorker(unittest.TestCase):
         for tender_id in self.tenders_id[0:2]:
             self.assertEqual(self.tender_queue.get(), tender_id)
 
-    @patch('gevent.sleep')
+    @patch('reports.brokers.databridge.scanner.sleep')
     def test_forward_dead(self, gevent_sleep):
         """ Test when forward dies"""
         gevent_sleep.side_effect = custom_sleep
@@ -124,7 +124,7 @@ class TestScannerWorker(unittest.TestCase):
         for tender_id in self.tenders_id[0:2]:
             self.assertEqual(self.tender_queue.get(), tender_id)
 
-    @patch('gevent.sleep')
+    @patch('reports.brokers.databridge.scanner.sleep')
     def test_forward_run(self, gevent_sleep):
         """  Run forward when backward get empty response and
             prev_page.offset is equal to next_page.offset """
@@ -138,7 +138,7 @@ class TestScannerWorker(unittest.TestCase):
         for tender_id in self.tenders_id[0:3]:
             self.assertEqual(self.tender_queue.get(), tender_id)
 
-    @patch('gevent.sleep')
+    @patch('reports.brokers.databridge.scanner.sleep')
     def test_get_tenders_exception(self, gevent_sleep):
         """ Catch exception in backward worker and after that put 2 tenders to process.Then catch exception for forward
         and after that put tender to process."""
@@ -155,7 +155,7 @@ class TestScannerWorker(unittest.TestCase):
         for tender_id in self.tenders_id:
             self.assertEqual(self.tender_queue.get(), tender_id)
 
-    @patch('gevent.sleep')
+    @patch('reports.brokers.databridge.scanner.sleep')
     def test_resource_error(self, gevent_sleep):
         """Raise Resource error, check in_queue, check sleep_change_value"""
         gevent_sleep.side_effect = custom_sleep
@@ -166,7 +166,7 @@ class TestScannerWorker(unittest.TestCase):
         self.assertEqual(self.tender_queue.get(), self.tenders_id[0])
         self.assertEqual(self.sleep_change_value.time_between_requests, 0)
 
-    @patch('gevent.sleep')
+    @patch('reports.brokers.databridge.scanner.sleep')
     def test_kill_jobs_with_exception(self, gevent_sleep):
         """Kill job and check Exception"""
         gevent_sleep.side_effect = custom_sleep
@@ -179,7 +179,7 @@ class TestScannerWorker(unittest.TestCase):
             job.kill(exception=Exception)
         self.assertFalse(self.worker.ready())
 
-    @patch('gevent.sleep')
+    @patch('reports.brokers.databridge.scanner.sleep')
     def test_forward_exception(self, gevent_sleep):
         """  Run forward when backward get empty response and
             prev_page.offset is equal to next_page.offset """

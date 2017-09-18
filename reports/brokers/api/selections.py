@@ -30,15 +30,15 @@ FROM
 
 report2 = '''
 SELECT
-  br.code as broker,
-  count(CASE WHEN ts.edr_status = 0 then ts.id end) as edr_not_exists_count,
-  count(CASE WHEN ts.edr_status = 1 then ts.id end) as edr_exists_count
+  br.code AS broker,
+  count(CASE WHEN ts.edr_status = 0 THEN ts.id END) AS edr_not_exists_count,
+  count(CASE WHEN ts.edr_status = 1 THEN ts.id END) AS edr_exists_count
 FROM
   tenders t
   LEFT JOIN brokers AS br ON br.id = t.broker_id
   LEFT JOIN bids AS b ON b.tender_id = t.id
   LEFT JOIN tenderers_bids tb ON tb.bid_id = b.id
-  LEFT JOIN tenderers ts on ts.id = tb.tenderer_id
+  LEFT JOIN tenderers ts ON ts.id = tb.tenderer_id
   INNER JOIN
   (
     SELECT
@@ -68,7 +68,7 @@ FROM
   LEFT JOIN brokers AS br ON br.id = t.broker_id
   LEFT JOIN bids AS b ON b.tender_id = t.id
   LEFT JOIN tenderers_bids tb ON tb.bid_id = b.id
-  LEFT JOIN tenderers ts on ts.id = tb.tenderer_id
+  LEFT JOIN tenderers ts ON ts.id = tb.tenderer_id
   INNER JOIN
   (
     SELECT

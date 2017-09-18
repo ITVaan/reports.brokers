@@ -2,18 +2,17 @@
 from __future__ import division
 
 import hashlib
+import mysql.connector as mariadb
+import os
 from datetime import datetime
+from logging import getLogger
 from shutil import copyfile
 from uuid import uuid4
 
-import mysql.connector as mariadb
-import os
 from openpyxl import load_workbook
 
 from reports.brokers.api.selections import *
 from reports.brokers.utils import get_root_pwd
-
-from logging import getLogger
 
 LOGGER = getLogger("{}.init".format(__name__))
 

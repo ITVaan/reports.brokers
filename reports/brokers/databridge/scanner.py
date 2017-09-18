@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-import logging.config
-from datetime import datetime
+from gevent import monkey, sleep, spawn
 
-import gevent
-from gevent import spawn
+monkey.patch_all()
+
+import logging.config
+
+from datetime import datetime
 from gevent.event import Event
 from restkit import ResourceError
 from retrying import retry
@@ -71,7 +73,7 @@ class Scanner(BaseWorker):
                                                       params={"TENDER_ID": tender['id']}))
             logger.info('Sleep {} sync...'.format(direction),
                         extra=journal_context({"MESSAGE_ID": DATABRIDGE_SYNC_SLEEP}))
-            gevent.sleep(self.delay + self.sleep_change_value.time_between_requests)
+            sleep(self.delay + self.sleep_change_value.time_between_requests)
             try:
                 response = self.tenders_sync_client.sync_tenders(params, extra_headers={
                     'X-Client-Request-ID': generate_req_id()})

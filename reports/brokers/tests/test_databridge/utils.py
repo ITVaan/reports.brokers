@@ -8,7 +8,6 @@ from gevent import sleep as gsleep
 def custom_sleep(seconds=0):
     return gsleep(seconds=0)
 
-
 def generate_request_id():
     return 'req-{}'.format(uuid4().hex)
 

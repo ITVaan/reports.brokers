@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 report1 = '''
 SELECT 
-  br.`code` AS broker, COUNT(ts.id) AS tenderers_count
+  br.`code` AS broker_name, COUNT(ts.id) AS suppliers_count
 FROM 
   tenders t
   LEFT JOIN `brokers` br ON br.`id` = t.`broker_id`
@@ -30,9 +30,9 @@ FROM
 
 report2 = '''
 SELECT
-  br.code AS broker,
-  count(CASE WHEN ts.edr_status = 0 THEN ts.id END) AS edr_not_exists_count,
-  count(CASE WHEN ts.edr_status = 1 THEN ts.id END) AS edr_exists_count
+  br.code AS broker_name,
+  count(CASE WHEN ts.edr_status = 0 THEN ts.id END) AS failed_reqs_count,
+  count(CASE WHEN ts.edr_status = 1 THEN ts.id END) AS sux_reqs_count
 FROM
   tenders t
   LEFT JOIN brokers AS br ON br.id = t.broker_id
@@ -62,7 +62,7 @@ FROM
 
 report3 = '''
 SELECT
-  br.code, ts.`identifier`, count(b.id)
+  br.code AS broker_name, ts.`identifier` AS tenderers_identifier, count(b.id) AS bids_count
 FROM
   tenders t
   LEFT JOIN brokers AS br ON br.id = t.broker_id
@@ -92,7 +92,7 @@ ORDER BY 1 DESC
 auth = '''
 SELECT id
 FROM users
-WHERE user_name=%(user_name)s AND password=password AND blocked=0
+WHERE user_name=%(user_name)s AND PASSWORD=PASSWORD AND blocked=0
 '''
 
 logging = '''

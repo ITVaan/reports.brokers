@@ -2,13 +2,13 @@
 from __future__ import division
 
 import hashlib
-import mysql.connector as mariadb
-import os
 from datetime import datetime
 from logging import getLogger
 from shutil import copyfile
 from uuid import uuid4
 
+import mysql.connector as mariadb
+import os
 from openpyxl import load_workbook
 
 from reports.brokers.api.selections import *
@@ -39,7 +39,7 @@ class GeneratorOfReports(object):
         self.conn = mariadb.connect(host=self.config_get("db_host"), user=self.config_get("db_user"),
                                     password=get_root_pwd(), database=self.config_get("database"),
                                     charset=self.config_get("db_charset") or 'utf8')
-        self.cursor = self.conn.cursor(buffered=True)
+        self.cursor = self.conn.cursor(buffered=True, named_tuple=True)
 
         # Launching of reports generator
         self.user_id = self.auth()
@@ -98,49 +98,28 @@ class GeneratorOfReports(object):
                                                                       uuid4=self.uuid, ext=file_format)
 
     def report_1(self):
-        for broker_name, suppliers_count in self.cursor:
-            self.data.append([broker_name, suppliers_count])
-        row = 2
-        for (broker_name, suppliers_count) in self.data:
-            self.ws.cell(row=row, column=1, value=broker_name)
-            self.ws.cell(row=row, column=2, value=suppliers_count)
-            row += 1
+        for row in self.cursor:
+            self.ws.append(row)
 
     def report_2(self):
-        for (broker_name, failed_reqs_count, sux_reqs_count) in self.cursor:
-            self.data.append((broker_name, failed_reqs_count, sux_reqs_count))
-        row = 2
-        for (broker_name, failed_reqs_count, sux_reqs_count) in self.data:
-            self.ws.cell(row=row, column=1, value=broker_name)
-            self.ws.cell(row=row, column=2, value=failed_reqs_count)
-            self.ws.cell(row=row, column=3, value=sux_reqs_count)
-            row += 1
+        for row in self.cursor:
+            self.ws.append(row)
 
     def report_3(self):
-        for (broker_name, tenderers_identifier, bids_count) in self.cursor:
-            self.data.append((broker_name, tenderers_identifier, bids_count))
-        br_names = sorted(list(set(broker_name for (broker_name, tenderers_identifier, bids_count) in self.data)))
+        self.data = [row for row in self.cursor]
+        br_names = sorted(list(set(row.broker_name for row in self.data)))
         zero_quartiles = []
         fourth_quartiles = []
 
         for br_name in br_names:
-            tmp = []
-            for (broker_name, tenderers_identifier, bids_count) in self.data:
-                if broker_name == br_name:
-                    tmp.append(bids_count)
+            tmp = [row.bids_count for row in self.data if row.broker_name == br_name]
             zero_quartiles.append((br_name, min(tmp)))
             fourth_quartiles.append((br_name, max(tmp)))
-        row = 2
+        initial_row = 2
 
         for br_name in br_names:
-            zero_q = 0
-            fourth_q = 0
-            for zero_val in zero_quartiles:
-                if zero_val[0] == br_name:
-                    zero_q = zero_val[1]
-            for fourth_val in fourth_quartiles:
-                if fourth_val[0] == br_name:
-                    fourth_q = fourth_val[1]
+            zero_q = filter(lambda x: x[0] == br_name, zero_quartiles)[0][1]
+            fourth_q = filter(lambda x: x[0] == br_name, fourth_quartiles)[0][1]
             first_q = (fourth_q - zero_q) * 0.25
             second_q = (fourth_q - zero_q) * 0.5
             third_q = (fourth_q - zero_q) * 0.75
@@ -153,37 +132,25 @@ class GeneratorOfReports(object):
 
             tmp = []
             tmp_tend = []
-            for (broker_name, tenderers_identifier, bids_count) in self.data:
-                if broker_name == br_name:
-                    tmp.append(bids_count)
-                    tmp_tend.append(tenderers_identifier)
-                    if zero_q == bids_count:
+            for row in self.data:
+                if row.broker_name == br_name:
+                    tmp.append(row.bids_count)
+                    tmp_tend.append(row.tenderers_identifier)
+                    if zero_q == row.bids_count:
                         zero_q_p += 1
-                    elif zero_q < bids_count <= first_q:
+                    elif zero_q < row.bids_count <= first_q:
                         first_q_p += 1
-                    elif first_q < bids_count <= second_q:
+                    elif first_q < row.bids_count <= second_q:
                         second_q_p += 1
-                    elif second_q < bids_count <= third_q:
+                    elif second_q < row.bids_count <= third_q:
                         third_q_p += 1
-                    elif third_q < bids_count <= fourth_q:
+                    elif third_q < row.bids_count <= fourth_q:
                         fourth_q_p += 1
             sum_bids_count = sum(tmp)
             num_tenderers = len(set(tmp_tend))
             average_part = "%.2f" % (sum_bids_count / num_tenderers)
-            self.ws.merge_cells(start_row=row, start_column=1, end_row=row + 1, end_column=1)
-            self.ws.cell(row=row, column=1, value=br_name)
-            self.ws.merge_cells(start_row=row, start_column=2, end_row=row + 1, end_column=2)
-            self.ws.cell(row=row, column=2, value=average_part)
-            self.ws.cell(row=row, column=3, value='quartiles')
-            self.ws.cell(row=row, column=4, value=zero_q)
-            self.ws.cell(row=row, column=5, value=first_q)
-            self.ws.cell(row=row, column=6, value=second_q)
-            self.ws.cell(row=row, column=7, value=third_q)
-            self.ws.cell(row=row, column=8, value=fourth_q)
-            self.ws.cell(row=row + 1, column=3, value='participants')
-            self.ws.cell(row=row + 1, column=4, value=zero_q_p)
-            self.ws.cell(row=row + 1, column=5, value=first_q_p)
-            self.ws.cell(row=row + 1, column=6, value=second_q_p)
-            self.ws.cell(row=row + 1, column=7, value=third_q_p)
-            self.ws.cell(row=row + 1, column=8, value=fourth_q_p)
-            row += 2
+            self.ws.append((br_name, average_part, 'quartiles', zero_q, first_q, second_q, third_q, fourth_q))
+            self.ws.append((br_name, average_part, 'participants', zero_q, first_q, second_q, third_q, fourth_q))
+            self.ws.merge_cells(start_row=initial_row, start_column=1, end_row=initial_row + 1, end_column=1)
+            self.ws.merge_cells(start_row=initial_row, start_column=2, end_row=initial_row + 1, end_column=2)
+            initial_row += 2

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from ConfigParser import SafeConfigParser
 from datetime import datetime
 from shutil import copyfile
 from uuid import uuid4
@@ -8,8 +9,6 @@ from gevent import sleep as gsleep
 from openpyxl import Workbook, load_workbook
 from os import path
 
-from reports.brokers.tests.test_databridge.base import config
-
 test_config = {
     'db_user': 'root',
     'db_password': 'root',
@@ -18,12 +17,15 @@ test_config = {
     'db_charset': 'utf8',
     'templates_dir': "reports/brokers/api/views/templates",
     'result_dir': path.join(path.dirname(path.realpath(__file__)), "test_reports")
-
 }
 
 
-def from_config(name):
-    return config.get('main').get(name)
+config = SafeConfigParser()
+config.read(path.join(path.dirname(__file__), "config.ini"))
+
+
+def config_get(name):
+    return config.get('app:api', name)
 
 
 def filename(report_number, user_id, file_format):

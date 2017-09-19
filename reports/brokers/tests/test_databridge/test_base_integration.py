@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from gevent import monkey
 
-from reports.brokers.tests.utils import from_config
-from reports.brokers.utils import get_root_pwd
 
 monkey.patch_all()
 
@@ -22,6 +20,8 @@ from reports.brokers.tests.utils import custom_sleep
 from restkit.errors import ResourceError
 from reports.brokers.databridge.base_integration import BaseIntegration
 from reports.brokers.databridge.bridge import TendersClientSync
+from reports.brokers.tests.utils import config_get
+from reports.brokers.utils import get_root_pwd
 from utils import generate_request_id
 from reports.brokers.databridge.sleep_change_value import APIRateController
 
@@ -86,11 +86,11 @@ class TestBaseIntegrationWorker(unittest.TestCase):
         self.sna.set()
         self.worker = BaseIntegration.spawn(self.client, self.filtered_tender_ids_queue, self.processing_docs_queue,
                                             self.sna, self.sleep_change_value,
-                                            db_host=from_config("db_host"),
-                                            db_user=from_config("db_user"),
+                                            db_host=config_get("db_host"),
+                                            db_user=config_get("db_user"),
                                             db_password=get_root_pwd(),
-                                            database=from_config("database"),
-                                            db_charset=from_config("db_charset"))
+                                            database=config_get("database"),
+                                            db_charset=config_get("db_charset"))
         self.bid_ids = [uuid.uuid4().hex for _ in range(5)]
         self.qualification_ids = [uuid.uuid4().hex for _ in range(5)]
         self.award_ids = [uuid.uuid4().hex for _ in range(5)]
@@ -102,18 +102,18 @@ class TestBaseIntegrationWorker(unittest.TestCase):
 
     def test_init(self):
         worker = BaseIntegration.spawn(None, None, None, self.sna, self.sleep_change_value,
-                                       db_host=from_config("db_host"),
-                                       db_user=from_config("db_user"),
+                                       db_host=config_get("db_host"),
+                                       db_user=config_get("db_user"),
                                        db_password=get_root_pwd(),
-                                       database=from_config("database"),
-                                       db_charset=from_config("db_charset"))
+                                       database=config_get("database"),
+                                       db_charset=config_get("db_charset"))
         self.assertGreater(datetime.datetime.now().isoformat(), worker.start_time.isoformat())
         self.assertEqual(worker.tenders_sync_client, None)
         self.assertEqual(worker.filtered_tender_ids_queue, None)
         self.assertEqual(worker.processing_docs_queue, None)
         self.assertEqual(worker.services_not_available, self.sna)
         self.assertEqual(worker.sleep_change_value.time_between_requests, 0)
-        self.assertEqual(worker.database, from_config("database"))
+        self.assertEqual(worker.database, config_get("database"))
         self.assertEqual(worker.delay, 15)
         self.assertEqual(worker.exit, False)
         worker.shutdown()

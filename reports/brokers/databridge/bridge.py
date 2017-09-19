@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
+from ConfigParser import SafeConfigParser
+
 from gevent import monkey
+
 
 monkey.patch_all()
 
@@ -10,7 +13,6 @@ import argparse
 import gevent
 
 from functools import partial
-from yaml import load
 from gevent import event
 from gevent.queue import Queue
 from retrying import retry
@@ -20,6 +22,7 @@ from constants import retry_mult
 from openprocurement_client.client import TendersClientSync as BaseTendersClientSync, TendersClient as BaseTendersClient
 from reports.brokers.databridge.scanner import Scanner
 from reports.brokers.databridge.base_integration import BaseIntegration
+from reports.brokers.databridge.deleting_old_reports import ReportCleaner
 from reports.brokers.databridge.utils import journal_context, check_412
 from reports.brokers.utils import get_root_pwd
 from reports.brokers.databridge.journal_msg_ids import (DATABRIDGE_RESTART_WORKER, DATABRIDGE_START,
@@ -48,7 +51,6 @@ class DataBridge(object):
     def __init__(self, config):
         super(DataBridge, self).__init__()
         self.config = config
-
         api_server = self.config_get('tenders_api_server')
         self.api_version = self.config_get('tenders_api_version')
         ro_api_server = self.config_get('public_tenders_api_server') or api_server
@@ -58,6 +60,7 @@ class DataBridge(object):
         self.decrement_step = self.config_get('decrement_step') or 1
         self.sleep_change_value = APIRateController(self.increment_step, self.decrement_step)
         self.database = self.config_get('database') or None
+        self.result_dir = self.config_get("result_dir") or "reports_finished_reports"
 
         # init clients
         self.tenders_sync_client = TendersClientSync('', host_url=ro_api_server, api_version=self.api_version)
@@ -91,8 +94,12 @@ class DataBridge(object):
                                         db_charset=self.config_get("db_charset"),
                                         delay=self.delay)
 
+        self.report_cleaner = partial(ReportCleaner.spawn,
+                                      services_not_available=self.services_not_available,
+                                      result_dir=self.result_dir)
+
     def config_get(self, name):
-        return self.config.get('main').get(name)
+        return self.config.get('app:api', name)
 
     @retry(stop_max_attempt_number=5, wait_exponential_multiplier=retry_mult)
     def check_openprocurement_api(self):
@@ -131,7 +138,8 @@ class DataBridge(object):
 
     def _start_jobs(self):
         self.jobs = {'Scanner': self.scanner(),
-                     'BaseIntegration': self.base_integration()}
+                     'BaseIntegration': self.base_integration(),
+                     'ReportCleaner': self.report_cleaner()}
 
     def launch(self):
         while True:
@@ -178,9 +186,10 @@ def main():
     parser.add_argument('--tender', type=str, help='Tender id to sync', dest="tender_id")
     params = parser.parse_args()
     if os.path.isfile(params.config):
+        config = SafeConfigParser()
+        config.read(params.config)
         with open(params.config) as config_file_obj:
-            config = load(config_file_obj.read())
-        logging.config.dictConfig(config)
+            logging.config.fileConfig(config_file_obj)
         bridge = DataBridge(config)
         bridge.launch()
     else:

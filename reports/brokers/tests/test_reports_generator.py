@@ -104,12 +104,12 @@ class TestReportsGenerator(BaseDbTestCase):
             if edr_status == 1:
                 cursor.execute(
                     """INSERT INTO `tenderers` (`identifier`, `scheme`, `edr_status`) VALUES ({}, "UA-EDR", 1)""".
-                    format(edr_ids[i]))
+                        format(edr_ids[i]))
                 edr_status = 0
             else:
                 cursor.execute(
                     """INSERT INTO `tenderers` (`identifier`, `scheme`, `edr_status`) VALUES ({}, "UA-EDR", 0)""".
-                    format(edr_ids[i]))
+                        format(edr_ids[i]))
                 edr_status = 1
             cursor.execute(
                 """INSERT INTO `tenderers_bids` (`tenderer_id`, `bid_id`) VALUES ({}, {})""".format(cursor.lastrowid,

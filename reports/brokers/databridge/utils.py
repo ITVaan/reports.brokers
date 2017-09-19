@@ -25,6 +25,8 @@ def check_412(func):
         try:
             response = func(obj, *args, **kwargs)
         except ResourceError as re:
+            print("ERROR {}".format(re.__dict__))
+            print("ERROR RESPONSE {}".format(re.response.__dict__))
             if re.status_int == 412:
                 obj.headers['Cookie'] = re.response.headers['Set-Cookie']
                 response = func(obj, *args, **kwargs)

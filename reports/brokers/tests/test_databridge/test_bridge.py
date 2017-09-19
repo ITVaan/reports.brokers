@@ -7,7 +7,8 @@ from mock import MagicMock, patch
 from openprocurement_client.client import TendersClient, TendersClientSync
 from restkit import RequestError
 from reports.brokers.databridge.bridge import DataBridge
-from reports.brokers.tests.test_databridge.base import BaseServersTest, config
+from reports.brokers.tests.test_databridge.base import BaseServersTest
+from reports.brokers.tests.utils import config, config_get
 from utils import AlmostAlwaysTrue, custom_sleep
 
 
@@ -16,8 +17,8 @@ class TestBridgeWorker(BaseServersTest):
         self.worker = DataBridge(config)
 
     def test_init(self):
-        self.assertEqual(self.worker.database, config['main']['database'])
-        self.assertEqual(self.worker.delay, config['main']['delay'])
+        self.assertEqual(self.worker.database, config_get('database'))
+        self.assertEqual(self.worker.delay, config_get('delay'))
         self.assertEqual(self.worker.sleep_change_value.time_between_requests, 0)
         self.assertTrue(isinstance(self.worker.tenders_sync_client, TendersClientSync))
         self.assertTrue(isinstance(self.worker.client, TendersClient))
@@ -29,27 +30,30 @@ class TestBridgeWorker(BaseServersTest):
         self.worker = DataBridge(config)
         # check client config
         self.assertEqual(client.call_args[0], ('',))
-        self.assertEqual(client.call_args[1], {'host_url': config['main']['public_tenders_api_server'],
-                                               'api_version': config['main']['tenders_api_version']})
+        self.assertEqual(client.call_args[1], {'host_url': config_get('public_tenders_api_server'),
+                                               'api_version': config_get('tenders_api_version')})
 
         # check sync client config
-        self.assertEqual(sync_client.call_args[0], (config['main']['api_token'],))
+        self.assertEqual(sync_client.call_args[0], (config_get('api_token'),))
         self.assertEqual(sync_client.call_args[1],
-                         {'host_url': config['main']['tenders_api_server'],
-                          'api_version': config['main']['tenders_api_version']})
+                         {'host_url': config_get('tenders_api_server'),
+                          'api_version': config_get('tenders_api_version')})
 
     def test_start_jobs(self):
-        scanner, base_integration = [MagicMock(return_value=i) for i in range(2)]
+        scanner, base_integration, report_cleaner = [MagicMock(return_value=i) for i in range(3)]
         self.worker.scanner = scanner
         self.worker.base_integration = base_integration
+        self.worker.report_cleaner = report_cleaner
 
         self.worker._start_jobs()
         # check that all jobs were started
         self.assertTrue(scanner.called)
         self.assertTrue(base_integration.called)
+        self.assertTrue(report_cleaner.called)
 
         self.assertEqual(self.worker.jobs['Scanner'], 0)
         self.assertEqual(self.worker.jobs['BaseIntegration'], 1)
+        self.assertEqual(self.worker.jobs['ReportCleaner'], 2)
 
     @patch('gevent.sleep')
     def test_bridge_run(self, sleep):

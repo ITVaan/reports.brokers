@@ -1,24 +1,21 @@
 # -*- coding: utf-8 -*-
-
 from gevent import monkey
-
-from reports.brokers.databridge.base_worker import BaseWorker
-
 monkey.patch_all()
-from yaml import load
-from datetime import datetime
-import gevent
-from gevent import spawn
 import os
+import gevent
+
+from gevent import spawn
+from datetime import datetime
+from reports.brokers.databridge.base_worker import BaseWorker
 
 DELAY = 3
 
 
 class ReportCleaner(BaseWorker):
-    def __init__(self, services_not_available):
+    def __init__(self, services_not_available, result_dir):
         super(ReportCleaner, self).__init__(services_not_available)
         self.start_time = datetime.now()
-        self.result_dir = self.config_get("result_dir")
+        self.result_dir = result_dir
 
     def deleting_old_reports(self):
         while not self.exit:
@@ -31,11 +28,6 @@ class ReportCleaner(BaseWorker):
                     if delta.days >= 0:
                         os.remove(os.path.abspath(os.path.join(self.result_dir, file)))
             gevent.sleep(DELAY)
-
-    def config_get(self, name):
-        with open("etc/reports_brokers.yaml") as config_file_obj:
-            config = load(config_file_obj.read())
-        return config.get(name)
 
     def _start_jobs(self):
         return {'deleting_old_reports': spawn(self.deleting_old_reports)}

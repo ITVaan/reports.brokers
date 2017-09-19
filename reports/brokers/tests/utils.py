@@ -4,9 +4,9 @@ from datetime import datetime
 from shutil import copyfile
 from uuid import uuid4
 
-import os
 from gevent import sleep as gsleep
 from openpyxl import Workbook, load_workbook
+import os
 from os import path
 
 test_config = {
@@ -37,8 +37,8 @@ def filename(report_number, user_id, file_format):
 
 def copy_xls_file_from_template():
     template_file_name = '1.xlsx'
-    result_file = path.join(test_config.get('result_dir'), filename(1, 1, ".xlsx"))
-    copyfile(path.join(test_config.get('templates_dir'), template_file_name), result_file)
+    result_file = os.path.join(test_config.get('result_dir'), filename(1, 1, ".xlsx"))
+    copyfile(os.path.join(test_config.get('templates_dir'), template_file_name), result_file)
 
     return result_file
 
@@ -46,7 +46,7 @@ def copy_xls_file_from_template():
 def test_purge():
     for file in os.listdir(test_config.get('result_dir')):
         if ".xls" in file or ".xlsx" in file:
-            os.remove(path.join(test_config.get('result_dir'), file))
+            os.remove(os.path.join(test_config.get('result_dir'), file))
 
 
 def create_example_worksheet():

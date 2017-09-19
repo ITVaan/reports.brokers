@@ -50,3 +50,9 @@ class JSONDataParserTest(TestCase):
         json_parser = JSONDataParser()
         response = MagicMock(body_string=MagicMock(return_value=json.dumps(tender_data)))
         edr_doc = json_parser.process_items_and_move(response)
+
+    @given(test_data_in)
+    def test_process_items_and_move_unicode(self, tender_data):
+        json_parser = JSONDataParser()
+        response = MagicMock(body_string=MagicMock(return_value=unicode(json.dumps(tender_data))))
+        edr_doc = json_parser.process_items_and_move(response)

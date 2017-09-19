@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from time import sleep
+
 from gevent import monkey
 
 monkey.patch_all()
@@ -87,6 +89,16 @@ class TestBridgeWorker(BaseServersTest):
         self.worker.check_services()
         self.assertTrue(self.worker.services_not_available.set.called)
 
+    @patch("gevent.sleep")
+    def test_check_services_exception(self, gevent_sleep):
+        self.worker.client = MagicMock(head=MagicMock(side_effect=RequestError()))
+        self.assertRaises(RequestError, lambda: self.worker.check_openprocurement_api())
+        self.worker.all_available()
+        self.assertFalse(self.worker.all_available())
+        self.worker.check_services()
+        self.assertTrue(self.worker.set_sleep)
+
+
     def test_check_services_mock(self):
         self.worker.check_openprocurement_api = MagicMock()
         self.worker.set_wake_up = MagicMock()
@@ -97,12 +109,20 @@ class TestBridgeWorker(BaseServersTest):
         self.assertFalse(self.worker.set_sleep.called)
 
     @patch("gevent.sleep")
-    def test_check_log(self, gevent_sleep):
+    def test_check_log_filtered_tender_ids_queue(self, gevent_sleep):
         gevent_sleep = custom_sleep
         self.worker.filtered_tender_ids_queue = MagicMock(qsize=MagicMock(side_effect=Exception()))
         self.worker.check_services = MagicMock(return_value=True)
         self.worker.run()
         self.assertTrue(self.worker.filtered_tender_ids_queue.qsize.called)
+
+    @patch("gevent.sleep")
+    def test_check_log_processing_docs_queue(self, gevent_sleep):
+        gevent_sleep = custom_sleep
+        self.worker.processing_docs_queue = MagicMock(qsize=MagicMock(side_effect=Exception()))
+        self.worker.check_services = MagicMock(return_value=True)
+        self.worker.run()
+        self.assertTrue(self.worker.processing_docs_queue.qsize.called)
 
     @patch("gevent.sleep")
     def test_launch(self, gevent_sleep):

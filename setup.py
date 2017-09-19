@@ -15,7 +15,8 @@ requires = [
     'pytz',
     'simplejson',
     'request_id_middleware',
-    'server_cookie_middleware'
+    'server_cookie_middleware',
+    'hypothesis'
 ]
 
 test_requires = requires + [

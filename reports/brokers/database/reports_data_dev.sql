@@ -173,6 +173,8 @@ CREATE TABLE `tenderers` (
   `identifier` varchar(50) NOT NULL COMMENT 'Organization identifier. Contains UA-EDR for Ukrainian organizations.',
   `scheme` varchar(50) NOT NULL,
   `created_on` timestamp NOT NULL DEFAULT current_timestamp(),
+  `edr_status` BOOLEAN NULL,
+  `edr_date` DATETIME NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `identifier` (`identifier`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Suppliers, or tender participants. Field called ''tenderers'' in main database';

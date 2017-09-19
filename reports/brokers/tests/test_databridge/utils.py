@@ -8,7 +8,6 @@ from gevent import sleep as gsleep
 def custom_sleep(seconds=0):
     return gsleep(seconds=0)
 
-
 def generate_request_id():
     return 'req-{}'.format(uuid4().hex)
 
@@ -27,6 +26,18 @@ class ResponseMock(object):
 
 
 class AlmostAlwaysTrue(object):
+    def __init__(self, total_iterations=1):
+        self.total_iterations = total_iterations
+        self.current_iteration = 0
+
+    def __nonzero__(self):
+        if self.current_iteration < self.total_iterations:
+            self.current_iteration += 1
+            return bool(1)
+        return bool(0)
+
+
+class AlmostAlwaysFalse(object):
     def __init__(self, total_iterations=1):
         self.total_iterations = total_iterations
         self.current_iteration = 0

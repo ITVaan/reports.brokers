@@ -1,11 +1,11 @@
+from logging import getLogger
+
 import os
-
-
 from pyramid.response import FileResponse
 from pyramid.view import view_config, view_defaults
 
 from reports.brokers.api.views.reports_generator import GeneratorOfReports
-from logging import getLogger
+
 LOGGER = getLogger("{}.init".format(__name__))
 
 
@@ -16,7 +16,7 @@ class ReportView(object):
         self.ROOT_DIR = os.path.dirname(__file__)
         self.REPORTS_PATH = request.registry.settings['result_dir']
 
-    @view_config(request_method='GET')
+    @view_config(request_method='GET', permission='view')
     def generate(self):
         data = dict(self.request.GET)
 

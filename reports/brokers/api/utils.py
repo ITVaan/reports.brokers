@@ -3,9 +3,11 @@ from ConfigParser import ConfigParser
 from hashlib import sha512
 from json import dumps
 from logging import getLogger
+
 from pyramid.httpexceptions import exception_response
-from pyramid.security import Allow
+from pyramid.security import Allow, Everyone
 from webob.multidict import NestedMultiDict
+
 from reports.brokers.utils import VERSION, default_error_status
 
 USERS = {}
@@ -16,9 +18,7 @@ class Root(object):
     __name__ = None
     __parent__ = None
     __acl__ = [
-        (Allow, 'g:platforms', 'verify'),
-        (Allow, 'g:robots', 'verify'),
-        (Allow, 'g:robots', 'get_details'),
+        (Allow, Everyone, 'view'),
     ]
 
     def __init__(self, request):

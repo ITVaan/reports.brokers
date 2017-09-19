@@ -42,6 +42,7 @@ waitress==0.8.9
 zope.deprecation==4.1.1
 zope.interface==4.1.1
 requests_mock==1.3.0
+hypothesis
 git+https://github.com/openprocurement/barbecue.git
 git+https://github.com/openprocurement/python-json-patch.git
 git+https://github.com/openprocurement/rfc6266.git

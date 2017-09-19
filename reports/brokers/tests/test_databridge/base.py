@@ -1,34 +1,13 @@
 # -*- coding: utf-8 -*-
 import unittest
+from ConfigParser import SafeConfigParser
 
 from bottle import Bottle, response
 from gevent.pywsgi import WSGIServer
 from os import path
 
+from reports.brokers.tests.utils import config_get, config
 from reports.brokers.utils import get_root_pwd
-
-config = {
-    'main':
-        {
-            'tenders_api_server': 'http://127.0.0.1:20604',
-            'tenders_api_version': '2.3',
-            'public_tenders_api_server': 'http://127.0.0.1:20605',
-            'buffers_size': 450,
-            'full_stack_sync_delay': 15,
-            'empty_stack_sync_delay': 101,
-            'on_error_sleep_delay': 5,
-            'api_token': "api_token",
-            'delay': 1,
-            'db_user': 'root',
-            'db_password': get_root_pwd(),
-            'db_host': 'localhost',
-            'database': 'reports_data_test',
-            'db_charset': 'utf8',
-            'templates_dir': "reports/brokers/api/views/templates",
-            'result_dir': path.join(path.dirname(path.realpath(__file__)), "test_reports")
-        }
-}
-
 
 class BaseServersTest(unittest.TestCase):
     """Api server to test reports.brokers.databridge.bridge """
@@ -50,7 +29,7 @@ class BaseServersTest(unittest.TestCase):
         del self.worker
 
 
-def setup_routing(app, func, path='/api/{}/spore'.format(config['main']['tenders_api_version']), method='GET'):
+def setup_routing(app, func, path='/api/{}/spore'.format(config_get('tenders_api_version')), method='GET'):
     app.route(path, method, func)
 
 

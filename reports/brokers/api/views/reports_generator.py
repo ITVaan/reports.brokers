@@ -1,18 +1,19 @@
 # coding=utf-8
+from __future__ import division
+
 import hashlib
 from datetime import datetime
+from logging import getLogger
 from shutil import copyfile
 from uuid import uuid4
 
 import mysql.connector as mariadb
 import os
 from openpyxl import load_workbook
-from yaml import load
 
 from reports.brokers.api.selections import *
 from reports.brokers.utils import get_root_pwd
 
-from logging import getLogger
 LOGGER = getLogger("{}.init".format(__name__))
 
 
@@ -38,7 +39,7 @@ class GeneratorOfReports(object):
         self.conn = mariadb.connect(host=self.config_get("db_host"), user=self.config_get("db_user"),
                                     password=get_root_pwd(), database=self.config_get("database"),
                                     charset=self.config_get("db_charset") or 'utf8')
-        self.cursor = self.conn.cursor(buffered=True)
+        self.cursor = self.conn.cursor(buffered=True, named_tuple=True)
 
         # Launching of reports generator
         self.user_id = self.auth()
@@ -52,12 +53,10 @@ class GeneratorOfReports(object):
             self.conn.close()
             self.wb.save(self.result_file)
         else:
-            print('Permission denied')
-            exit()
+            LOGGER.info('Permission denied')
 
     def config_get(self, name):
         return self.config.get(name)
-        # return self.config.get('main').get(name)
 
     def auth(self):
         self.cursor.execute(auth, {'user_name': self.user_name, 'password': self.password})
@@ -67,8 +66,6 @@ class GeneratorOfReports(object):
 
     def start_reporting(self):
         # Report file creation
-        LOGGER.info("Start reporting")
-
         template_file_name = '{}.xlsx'.format(self.report_number)
         file_format = os.path.splitext(template_file_name)[1]
         self.result_file = os.path.join(self.result_dir, self.filename(file_format))
@@ -77,7 +74,7 @@ class GeneratorOfReports(object):
         self.ws = self.wb.active
 
         # Start
-        LOGGER.info("Start reporting 2: rep_number={}; type {}".format(self.report_number, type(self.report_number)))
+        LOGGER.info("Start reporting: rep_number={}".format(self.report_number))
         if self.report_number == '1':
             self.cursor.execute(report1, {'start_date': self.start_report_period, 'end_date': self.end_report_period})
             self.report_1()
@@ -100,33 +97,60 @@ class GeneratorOfReports(object):
                                                                       uid=str(self.user_id),
                                                                       uuid4=self.uuid, ext=file_format)
 
-    def get_path_from_hash(self, hash_file):
-        for file in os.listdir(self.result_dir):
-            pattern = file.split('_')[3].split('.')[0]
-            if pattern == hash_file:
-                return os.path.abspath(os.path.join(self.result_dir, file))
-        return 'Wrong hash or this file is deleted!'
-
     def report_1(self):
-        LOGGER.info("report 1")
-        for broker_name, suppliers_count in self.cursor:
-            self.data.append([broker_name, suppliers_count])
-        row = 2
-        for (broker_name, suppliers_count) in self.data:
-            self.ws.cell(row=row, column=1, value=broker_name)
-            self.ws.cell(row=row, column=2, value=suppliers_count)
-            row += 1
+        for row in self.cursor:
+            self.ws.append(row)
 
     def report_2(self):
-        pass
+        for row in self.cursor:
+            self.ws.append(row)
 
     def report_3(self):
-        pass
+        self.data = [row for row in self.cursor]
+        br_names = sorted(list(set(row.broker_name for row in self.data)))
+        zero_quartiles = []
+        fourth_quartiles = []
 
+        for br_name in br_names:
+            tmp = [row.bids_count for row in self.data if row.broker_name == br_name]
+            zero_quartiles.append((br_name, min(tmp)))
+            fourth_quartiles.append((br_name, max(tmp)))
+        initial_row = 2
 
-if __name__ == '__main__':
-    with open("/home/dtrenkenshu/PycharmProjects/reports.brokers/etc/reports_brokers.yaml") as config_file_obj:
-        config = load(config_file_obj.read())
-    os.chdir("/home/dtrenkenshu/PycharmProjects/reports.brokers")
-    gor = GeneratorOfReports('01.05.2017', '01.06.2017', 1, 'test', 'test', config)
-    print('Well done!')
+        for br_name in br_names:
+            zero_q = filter(lambda x: x[0] == br_name, zero_quartiles)[0][1]
+            fourth_q = filter(lambda x: x[0] == br_name, fourth_quartiles)[0][1]
+            first_q = (fourth_q - zero_q) * 0.25
+            second_q = (fourth_q - zero_q) * 0.5
+            third_q = (fourth_q - zero_q) * 0.75
+
+            zero_q_p = 0
+            first_q_p = 0
+            second_q_p = 0
+            third_q_p = 0
+            fourth_q_p = 0
+
+            tmp = []
+            tmp_tend = []
+            for row in self.data:
+                if row.broker_name == br_name:
+                    tmp.append(row.bids_count)
+                    tmp_tend.append(row.tenderers_identifier)
+                    if zero_q == row.bids_count:
+                        zero_q_p += 1
+                    elif zero_q < row.bids_count <= first_q:
+                        first_q_p += 1
+                    elif first_q < row.bids_count <= second_q:
+                        second_q_p += 1
+                    elif second_q < row.bids_count <= third_q:
+                        third_q_p += 1
+                    elif third_q < row.bids_count <= fourth_q:
+                        fourth_q_p += 1
+            sum_bids_count = sum(tmp)
+            num_tenderers = len(set(tmp_tend))
+            average_part = "%.2f" % (sum_bids_count / num_tenderers)
+            self.ws.append((br_name, average_part, 'quartiles', zero_q, first_q, second_q, third_q, fourth_q))
+            self.ws.append((br_name, average_part, 'participants', zero_q, first_q, second_q, third_q, fourth_q))
+            self.ws.merge_cells(start_row=initial_row, start_column=1, end_row=initial_row + 1, end_column=1)
+            self.ws.merge_cells(start_row=initial_row, start_column=2, end_row=initial_row + 1, end_column=2)
+            initial_row += 2

@@ -54,10 +54,10 @@ class DataBridge(object):
         api_server = self.config_get('tenders_api_server')
         self.api_version = self.config_get('tenders_api_version')
         ro_api_server = self.config_get('public_tenders_api_server') or api_server
-        buffers_size = self.config_get('buffers_size') or 500
-        self.delay = self.config_get('delay') or 15
-        self.increment_step = self.config_get('increment_step') or 1
-        self.decrement_step = self.config_get('decrement_step') or 1
+        buffers_size = int(self.config_get('buffers_size')) or 500
+        self.delay = int(self.config_get('delay')) or 15
+        self.increment_step = int(self.config_get('increment_step')) or 1
+        self.decrement_step = int(self.config_get('decrement_step')) or 1
         self.sleep_change_value = APIRateController(self.increment_step, self.decrement_step)
         self.database = self.config_get('database') or None
         self.result_dir = self.config_get("result_dir") or "reports_finished_reports"
@@ -166,6 +166,7 @@ class DataBridge(object):
             logger.info('Exiting...')
             gevent.killall(self.jobs, timeout=5)
         except Exception as e:
+            print("EXCEPTION {}".format(e))
             logger.error(e)
 
     def check_and_revive_jobs(self):
@@ -188,8 +189,7 @@ def main():
     if os.path.isfile(params.config):
         config = SafeConfigParser()
         config.read(params.config)
-        with open(params.config) as config_file_obj:
-            logging.config.fileConfig(config_file_obj)
+        logging.config.fileConfig(params.config)
         bridge = DataBridge(config)
         bridge.launch()
     else:

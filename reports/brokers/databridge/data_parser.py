@@ -49,10 +49,11 @@ class JSONDataParser(DataParser):
             logger.info(u'Tender {} has no awards'.format(tender_id))
 
     def process_items_and_move(self, response):
-        if type(response.body_string()) == unicode:
-            tender_json = munchify(loads(response.body_string()))
+        res = response.body_string()
+        if type(res) == unicode:
+            tender_json = munchify(loads(res))
         else:
-            tender_json = munchify(loads(response.body_string().decode("utf-8")))
+            tender_json = munchify(loads(res.decode("utf-8")))
         try:
             tender_data = tender_json['data']
         except TypeError as e:
@@ -61,5 +62,5 @@ class JSONDataParser(DataParser):
             logger.info("No data found. {}".format(e))
         else:
             edr_doc = self.processing_docs(tender_data)
-            tender_str = json.dumps(tender_data)
-            return tender_data, tender_str, edr_doc
+
+            return tender_data, res, edr_doc

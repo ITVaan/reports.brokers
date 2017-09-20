@@ -81,9 +81,9 @@ class BaseIntegration(BaseWorker):
         self.sleep_change_value.decrement()
         if response.status_int == 200:
             try:
-                tender_data, tender_str, edr_doc = DataParser.process_items_and_move(response)
+                tender_data, tender_str, edr_doc = JSONDataParser().process_items_and_move(response)
             except Exception as e:
-                logger.warning("Error while parsing tender tender. {}".format(e))
+                logger.warning("Error while parsing tender. Message: {}".format(e))
             else:
                 self.processing_docs_queue.put(edr_doc)
                 conn = mariadb.connect(host=self.db_host, user=self.db_user, password=self.db_password,

@@ -39,9 +39,21 @@ database() {
     mysql -uroot $DATABASE_NAME < /usr/src/reports.brokers/reports/brokers/database/reports_data_dev.sql
 }
 
+build_project() {
+    cd /usr/src/reports.brokers && git pull
+    source .env/bin/activate && python bootstrap.py --buildout-version=2.2.5 && bin/buildout -N
+}
+
 run() {
-    cd /usr/src/reports.brokers && source .env/bin/activate && ./bin/circusd
+#    yum install -y procps
+#    pkill -f tmux
+    echo "Run..."
+#    cd /usr/src/reports.brokers && source .env/bin/activate && ./bin/circusd
+    cd /usr/src/reports.brokers && source .env/bin/activate && echo "$(ls -la)" && tmux new-session -d -s runserver "./bin/circusd"
+    echo "END"
 }
 
 database
+build_project
 run
+bash

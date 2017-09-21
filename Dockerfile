@@ -3,7 +3,7 @@ FROM fedora:25
 
 # Installation system requirements
 RUN yum install -y git gcc file libevent-devel python-devel \
-  sqlite-devel zeromq-devel libffi-devel openssl-devel systemd-python
+  sqlite-devel zeromq-devel libffi-devel openssl-devel systemd-python tmux
 
 # MariaDB 10.2
 RUN dnf install -y wget
@@ -24,10 +24,8 @@ COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 RUN ln -s usr/local/bin/docker-entrypoint.sh
 
-# EXPOSE 9999
+COPY base.cfg /usr/src/reports.brokers/
 
-# Build project
-RUN cd /usr/src/reports.brokers git pull
-RUN cd /usr/src/reports.brokers && source .env/bin/activate && python bootstrap.py --buildout-version=2.2.5 && bin/buildout -N
+EXPOSE 3306 9999
 
 ENTRYPOINT ["docker-entrypoint.sh"]

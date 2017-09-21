@@ -85,15 +85,16 @@ class BaseIntegration(BaseWorker):
             except Exception as e:
                 logger.warning("Error while parsing tender. Message: {}".format(e))
             else:
-                self.processing_docs_queue.put(edr_doc)
+                if edr_doc:
+                    self.processing_docs_queue.put(edr_doc)
                 conn = mariadb.connect(host=self.db_host, user=self.db_user, password=self.db_password,
                                        database=self.database, charset=self.db_charset)
                 cursor = conn.cursor(buffered=False)
                 cursor.callproc('sp_update_tender', (tender_str, tender_data['dateModified'], 0, ''))
                 if "bids" in tender_data:
-                    logger.info("Tender {} got. Bids count: {}".format(tender_id, len(tender_data['bids'])))
+                    logger.debug("Tender {} got. Bids count: {}".format(tender_id, len(tender_data['bids'])))
                 else:
-                    logger.info("Tender {} got without bids. Status: {}".format(tender_id, tender_data['status']))
+                    logger.debug("Tender {} got without bids. Status: {}".format(tender_id, tender_data['status']))
 
     def _start_jobs(self):
         return {'adding_to_db': spawn(self.adding_to_db)}

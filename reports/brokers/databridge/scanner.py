@@ -117,9 +117,9 @@ class Scanner(BaseWorker):
 
     def put_tenders_to_process(self, params, direction):
         for tender in self.get_tenders(params=params, direction=direction):
-            logger.info('{} sync: Put tender {} to process...'.format(direction.capitalize(), tender['id']),
-                        extra=journal_context({"MESSAGE_ID": DATABRIDGE_TENDER_PROCESS},
-                                              {"TENDER_ID": tender['id']}))
+            # logger.info('{} sync: Put tender {} to process...'.format(direction.capitalize(), tender['id']),
+            #             extra=journal_context({"MESSAGE_ID": DATABRIDGE_TENDER_PROCESS},
+            #                                   {"TENDER_ID": tender['id']}))
             self.filtered_tender_ids_queue.put(tender['id'])
 
     def _start_jobs(self):

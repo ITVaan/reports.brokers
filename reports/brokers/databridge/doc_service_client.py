@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from gevent import monkey
+monkey.patch_all()
 import logging.config
 
 import requests
@@ -19,7 +21,7 @@ class DocServiceClient(object):
 
     @retry(stop_max_attempt_number=5, wait_exponential_multiplier=1)
     def download(self, url):
-        res = self.session.get(url=url, timeout=self.timeout)
+        res = self.session.get(url=url, timeout=self.timeout, stream=True)
         if res.status_code == 200:
             return res
         else:

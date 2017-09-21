@@ -37,22 +37,23 @@ class JSONDataParser(DataParser):
                 if aw and 'documents' in aw and aw.get('documents'):
                     for doc in aw['documents']:
                         doc_url = doc['url']
-                        if 'bid_id' in aw:
+                        if 'bid_id' in aw and doc.get('documentType') == 'registerExtract':
                             bid_id = aw['bid_id']
-                            logger.info('Processing_docs data: {}'.format(EdrDocument(tender_id, bid_id, doc_url)))
+                            logger.debug('Processing_docs data: {}'.format(EdrDocument(tender_id, bid_id, doc_url)))
                             return EdrDocument(tender_id, bid_id, doc_url)
                         else:
-                            logger.info(u'Tender {} award {} has no bidID'.format(tender_id, aw['id']))
+                            logger.debug(u'Tender {} award {} has no bidID'.format(tender_id, aw['id']))
                 else:
-                    logger.info(u'Tender {} award {} has no documents'.format(tender_id, aw['id'] if aw else aw))
+                    logger.debug(u'Tender {} award {} has no documents'.format(tender_id, aw['id'] if aw else aw))
         else:
-            logger.info(u'Tender {} has no awards'.format(tender_id))
+            logger.debug(u'Tender {} has no awards'.format(tender_id))
 
     def process_items_and_move(self, response):
-        if type(response.body_string()) == unicode:
-            tender_json = munchify(loads(response.body_string()))
+        res = response.body_string()
+        if type(res) == unicode:
+            tender_json = munchify(loads(res))
         else:
-            tender_json = munchify(loads(response.body_string().decode("utf-8")))
+            tender_json = munchify(loads(res.decode("utf-8")))
         try:
             tender_data = tender_json['data']
         except TypeError as e:
@@ -61,5 +62,4 @@ class JSONDataParser(DataParser):
             logger.info("No data found. {}".format(e))
         else:
             edr_doc = self.processing_docs(tender_data)
-            tender_str = json.dumps(tender_data)
-            return tender_data, tender_str, edr_doc
+            return tender_data, res, edr_doc

@@ -3,6 +3,8 @@ from ConfigParser import SafeConfigParser
 
 from gevent import monkey
 
+from reports.brokers.databridge.doc_service_client import DocServiceClient
+from reports.brokers.databridge.download_from_doc_service import DownloadFromDocServiceWorker
 
 monkey.patch_all()
 
@@ -65,10 +67,12 @@ class DataBridge(object):
         # init clients
         self.tenders_sync_client = TendersClientSync('', host_url=ro_api_server, api_version=self.api_version)
         self.client = TendersClient(self.config_get('api_token'), host_url=api_server, api_version=self.api_version)
+        self.doc_client = DocServiceClient("https://public.api-sandbox.openprocurement.org")
 
         # init queues for workers
         self.filtered_tender_ids_queue = Queue(maxsize=buffers_size)  # queue of tender IDs with appropriate status
         self.processing_docs_queue = Queue(maxsize=buffers_size)  # queue of tender IDs, bid IDs and doc. urls
+        self.edr_data_to_database_queue = Queue(maxsize=buffers_size)
 
         # blockers
         self.initialization_event = event.Event()
@@ -97,6 +101,12 @@ class DataBridge(object):
         self.report_cleaner = partial(ReportCleaner.spawn,
                                       services_not_available=self.services_not_available,
                                       result_dir=self.result_dir)
+
+        self.download_from_doc_service = partial(DownloadFromDocServiceWorker.spawn,
+                                                 services_not_available=self.services_not_available,
+                                                 doc_client=self.doc_client,
+                                                 items_to_download_queue=self.processing_docs_queue,
+                                                 edr_data_to_database=self.edr_data_to_database_queue)
 
     def config_get(self, name):
         return self.config.get('app:api', name)
@@ -139,7 +149,8 @@ class DataBridge(object):
     def _start_jobs(self):
         self.jobs = {'Scanner': self.scanner(),
                      'BaseIntegration': self.base_integration(),
-                     'ReportCleaner': self.report_cleaner()}
+                     'ReportCleaner': self.report_cleaner(),
+                     'DownloadFromDocServiceWorker': self.download_from_doc_service()}
 
     def launch(self):
         while True:

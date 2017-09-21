@@ -11,11 +11,15 @@ from reports.brokers.databridge.data_parser import JSONDataParser
 test_award = st.one_of(st.none(), st.fixed_dictionaries({
     u"id": st.text(),
     u"bid_id": st.text(),
-    u"documents": st.lists(st.fixed_dictionaries({"url": st.text()}))
+    u"documents": st.lists(st.fixed_dictionaries({"url": st.text(),
+                                                  u"documentType": st.just(u'registerExtract')}))
 }),
                        st.fixed_dictionaries({
                            u"id": st.text(),
-                           u"documents": st.lists(st.fixed_dictionaries({"url": st.text()}))
+                           u"documents": st.lists(st.fixed_dictionaries({
+                               u"url": st.text(),
+                               u"documentType": st.just(u'registerExtract')
+                           }))
                        }
                        ))
 

@@ -15,6 +15,7 @@ from gevent.queue import Queue
 from mock import MagicMock
 from time import sleep
 from hypothesis import given, assume
+from yaml import dump as yaml_dump
 
 from utils import AlmostAlwaysFalse
 from reports.brokers.databridge.download_from_doc_service import DownloadFromDocServiceWorker
@@ -40,23 +41,28 @@ class TestDownloadFromDocServiceWorker(unittest.TestCase):
         worker.get_item_from_doc_service.assert_called_once()
         worker.retry_get_item_from_doc_service.assert_called_once()
 
-    @given(st.text(), st.text(), st.text())
+    @given(st.uuids(), st.uuids(), st.text())
     def test_get_items_from_doc_service(self, tender_id, bid_id, doc_url):
+        res = yaml_dump({"test": "test"})
+        doc_client_mock = MagicMock(download=MagicMock(return_value=MagicMock(raw=MagicMock(read=MagicMock(return_value=res)))))
         data = EdrDocument(tender_id, bid_id, doc_url)
         self.in_queue.put(data)
-        worker = DownloadFromDocServiceWorker(MagicMock(), MagicMock(), self.in_queue, self.out_queue)
+        worker = DownloadFromDocServiceWorker(MagicMock(), doc_client_mock, self.in_queue, self.out_queue)
         worker.exit = AlmostAlwaysFalse()
         worker.get_item_from_doc_service()
+        self.assertEqual(worker.edr_data_to_database.get(), (tender_id, bid_id, {"test": "test"}))
 
-    @given(st.text(), st.text(), st.text())
+    @given(st.uuids(), st.uuids(), st.text())
     def test_retry_get_items_from_doc_service(self, tender_id, bid_id, doc_url):
         assume(doc_url != '')
+        res = yaml_dump({"test": "test"})
         data = EdrDocument(tender_id, bid_id, doc_url)
-        worker = DownloadFromDocServiceWorker(MagicMock(), MagicMock(), self.in_queue, self.out_queue)
+        doc_client_mock = MagicMock(download=MagicMock(return_value=MagicMock(raw=MagicMock(read=MagicMock(return_value=res)))))
+        worker = DownloadFromDocServiceWorker(MagicMock(), doc_client_mock, self.in_queue, self.out_queue)
         worker.retry_items_to_download_queue.put(data)
         worker.exit = AlmostAlwaysFalse()
         worker.retry_get_item_from_doc_service()
-        self.assertEqual(worker.retry_items_to_download_queue.peek(), (tender_id, bid_id, doc_url))
+        self.assertEqual(worker.edr_data_to_database.get(), (tender_id, bid_id, {"test": "test"}))
         #TODO this test will have to be updated after I finish interaction with DB
 
     @requests_mock.Mocker()

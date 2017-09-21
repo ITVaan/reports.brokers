@@ -177,7 +177,6 @@ class DataBridge(object):
             logger.info('Exiting...')
             gevent.killall(self.jobs, timeout=5)
         except Exception as e:
-            print("EXCEPTION {}".format(e))
             logger.error(e)
 
     def check_and_revive_jobs(self):

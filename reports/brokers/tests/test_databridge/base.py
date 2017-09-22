@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 import unittest
-from ConfigParser import SafeConfigParser
 
 from bottle import Bottle, response
 from gevent.pywsgi import WSGIServer
 from os import path
 
-from reports.brokers.tests.utils import config_get, config
-from reports.brokers.utils import get_root_pwd
+from reports.brokers.tests.utils import config_get
 
 class BaseServersTest(unittest.TestCase):
     """Api server to test reports.brokers.databridge.bridge """

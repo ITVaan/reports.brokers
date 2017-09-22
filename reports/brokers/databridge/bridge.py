@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
-from ConfigParser import SafeConfigParser
-
 from gevent import monkey
-
-from reports.brokers.databridge.doc_service_client import DocServiceClient
-from reports.brokers.databridge.download_from_doc_service import DownloadFromDocServiceWorker
-
 monkey.patch_all()
 
 import logging
@@ -19,8 +13,13 @@ from gevent import event
 from gevent.queue import Queue
 from retrying import retry
 from restkit import RequestError, ResourceError
+from ConfigParser import SafeConfigParser
 from constants import retry_mult
 
+
+from reports.brokers.databridge.doc_service_client import DocServiceClient
+from reports.brokers.databridge.download_from_doc_service import DownloadFromDocServiceWorker
+from reports.brokers.databridge.upload_edr_data_to_db import UploadEdrDataToDbWorker
 from openprocurement_client.client import TendersClientSync as BaseTendersClientSync, TendersClient as BaseTendersClient
 from reports.brokers.databridge.scanner import Scanner
 from reports.brokers.databridge.base_integration import BaseIntegration
@@ -108,6 +107,17 @@ class DataBridge(object):
                                                  items_to_download_queue=self.processing_docs_queue,
                                                  edr_data_to_database=self.edr_data_to_database_queue)
 
+        self.upload_edr_data = partial(UploadEdrDataToDbWorker.spawn,
+                                       services_not_available=self.services_not_available,
+                                       edr_data_to_database=self.edr_data_to_database_queue,
+                                       sleep_change_value=self.sleep_change_value,
+                                       db_host=self.config_get("db_host"),
+                                       db_user=self.config_get("db_user"),
+                                       db_password=get_root_pwd(),
+                                       database=self.config_get("database"),
+                                       db_charset=self.config_get("db_charset"),
+                                       delay=self.delay)
+
     def config_get(self, name):
         return self.config.get('app:api', name)
 
@@ -150,7 +160,8 @@ class DataBridge(object):
         self.jobs = {'Scanner': self.scanner(),
                      'BaseIntegration': self.base_integration(),
                      'ReportCleaner': self.report_cleaner(),
-                     'DownloadFromDocServiceWorker': self.download_from_doc_service()}
+                     'DownloadFromDocServiceWorker': self.download_from_doc_service(),
+                     'UploadEdrDataToDbWorker': self.upload_edr_data()}
 
     def launch(self):
         while True:

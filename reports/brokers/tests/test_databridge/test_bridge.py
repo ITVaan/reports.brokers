@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from time import sleep
-
 from gevent import monkey
 
 monkey.patch_all()
+
+from time import sleep
 from gevent import killall
 from mock import MagicMock, patch
 from openprocurement_client.client import TendersClient, TendersClientSync

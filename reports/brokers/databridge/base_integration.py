@@ -22,9 +22,9 @@ class BaseIntegration(BaseWorker):
     """ Data Bridge """
 
     def __init__(self, tenders_sync_client, filtered_tender_ids_queue, processing_docs_queue, services_not_available,
-                 sleep_change_value,
-                 db_host, db_user, db_password, database, db_charset, delay=15):
+                 sleep_change_value, db_host, db_user, db_password, database, db_charset, delay=15):
         super(BaseIntegration, self).__init__(services_not_available)
+        # database connection parameters
         self.db_host = db_host
         self.db_user = db_user
         self.db_password = db_password
@@ -33,13 +33,11 @@ class BaseIntegration(BaseWorker):
         self.start_time = datetime.now()
         self.delay = delay
         self.parser = JSONDataParser()
-        # init clients
-        self.tenders_sync_client = tenders_sync_client
-
         # init queues for workers
         self.filtered_tender_ids_queue = filtered_tender_ids_queue
         self.processing_docs_queue = processing_docs_queue
-
+        # init clients
+        self.tenders_sync_client = tenders_sync_client
         # blockers
         self.sleep_change_value = sleep_change_value
 

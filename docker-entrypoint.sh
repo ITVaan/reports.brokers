@@ -45,15 +45,11 @@ build_project() {
 }
 
 run() {
-#    yum install -y procps
-#    pkill -f tmux
+    pkill -f tmux
     echo "Run..."
-#    cd /usr/src/reports.brokers && source .env/bin/activate && ./bin/circusd
-    cd /usr/src/reports.brokers && source .env/bin/activate && echo "$(ls -la)" && tmux new-session -d -s runserver "./bin/circusd"
-    echo "END"
+    cd /usr/src/reports.brokers && source .env/bin/activate && tmux new-session -d -s runserver "./bin/circusd"
 }
 
 database
 build_project
 run
-bash

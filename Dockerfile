@@ -16,8 +16,12 @@ RUN mkdir /usr/src/reports.brokers/ && git clone https://github.com/ITVaan/repor
 RUN pip install virtualenv --upgrade && virtualenv --python=/usr/bin/python2.7 /usr/src/reports.brokers/.env
 
 # Entrypoint
+#COPY docker-entrypoint.sh /usr/local/bin/
+
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 RUN ln -s /usr/local/bin/docker-entrypoint.sh
+
+#COPY base.cfg /usr/src/reports.brokers/
 
 EXPOSE 3306 9999
 

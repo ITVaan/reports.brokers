@@ -41,13 +41,14 @@ database() {
 
 build_project() {
     cd /usr/src/reports.brokers && git pull
-    source .env/bin/activate && python bootstrap.py --buildout-version=2.2.5 && bin/buildout -N
+    source .env/bin/activate && python bootstrap.py --buildout-version=2.2.5 && bin/buildout -N && bin/nosetests && bin/coveralls
 }
 
 run() {
     pkill -f tmux
     echo "Run..."
     cd /usr/src/reports.brokers && source .env/bin/activate && tmux new-session -d -s runserver "./bin/circusd"
+    bash
 }
 
 database

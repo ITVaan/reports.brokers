@@ -12,7 +12,9 @@ cache:
 before_install:
   - pip install setuptools
   - python2 bootstrap.py --buildout-version 2.2.5
-services: mariadb
+#services: mariadb
+services:
+  - docker
 install:
   - bin/buildout -N
 script:

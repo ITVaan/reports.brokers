@@ -1,36 +1,15 @@
 # coding=utf-8
 from gevent import monkey
 
-from reports.brokers.tests.utils import test_purge
+from reports.brokers.tests.utils import test_purge, execute_scripts_from_file
 
 monkey.patch_all()
 
 import mysql.connector as mariadb
 
 from unittest import TestCase
-from re import compile, I
 from hashlib import sha256
 from reports.brokers.utils import get_root_pwd
-
-
-def execute_scripts_from_file(cursor, filename):
-    # Open and read the file as a single buffer
-    fd = open(filename, 'r')
-    sql_file = fd.read()
-    fd.close()
-    # Find special delimiters
-    delimiters = compile('DELIMITER *(\S*)', I)
-    result = delimiters.split(sql_file)
-    # Insert default delimiter and separate delimiters and sql
-    result.insert(0, ';')
-    delimiter = result[0::2]
-    section = result[1::2]
-    for i in range(len(delimiter)):
-        queries = section[i].split(delimiter[i])
-        for query in queries:
-            if not query.strip():
-                continue
-            cursor.execute(query)
 
 
 class BaseDbTestCase(TestCase):

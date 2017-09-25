@@ -10,12 +10,12 @@ from reports.brokers.tests.utils import test_config
 class TestReportsGenerator(BaseDbTestCase):
     def test_init(self):
         cursor = self.conn.cursor(buffered=True)
-        password = sha256("1234").hexdigest()
-        cursor.execute("""INSERT INTO `users` (`user_name`, `password`, `blocked`) VALUES ("Vlad", "{}", 0);""".format(
+        password = sha256("test").hexdigest()
+        cursor.execute("""INSERT INTO `users` (`user_name`, `password`, `blocked`) VALUES ("test", "{}", 0);""".format(
             password))
         cursor.close()
         self.conn.commit()
-        rep_gen = GeneratorOfReports('01.05.2017', '01.06.2017', 1, 'Vlad', '1234', test_config)
+        rep_gen = GeneratorOfReports('01.05.2017', '01.06.2017', 1, 'test', 'test', test_config)
         self.assertEqual(rep_gen.report_number, 1)
         self.assertEqual(rep_gen.password, password)
         self.assertEqual(rep_gen.config, test_config)

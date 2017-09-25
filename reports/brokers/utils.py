@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from ConfigParser import SafeConfigParser
 from logging import getLogger
+
 from pkg_resources import get_distribution
 
 PKG = get_distribution(__package__)

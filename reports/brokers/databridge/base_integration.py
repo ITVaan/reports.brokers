@@ -13,7 +13,7 @@ from restkit.errors import ResourceError
 
 from reports.brokers.databridge.utils import journal_context
 from reports.brokers.databridge.base_worker import BaseWorker
-from reports.brokers.databridge.data_parser import DataParser, JSONDataParser
+from reports.brokers.databridge.data_parser import JSONDataParser
 
 logger = logging.getLogger(__name__)
 

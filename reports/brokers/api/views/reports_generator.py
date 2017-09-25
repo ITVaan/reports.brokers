@@ -22,6 +22,7 @@ class GeneratorOfReports(object):
         # Report period
         self.start_report_period = datetime.strptime(str(start_report_period), '%d.%m.%Y')
         self.end_report_period = datetime.strptime(str(end_report_period), '%d.%m.%Y')
+        self.date = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 
         # Authentication check
         self.report_number = report_number
@@ -44,7 +45,6 @@ class GeneratorOfReports(object):
         # Launching of reports generator
         self.user_id = self.auth()
         if self.user_id:
-            self.date = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
             self.uuid = uuid4().hex
             self.start_reporting()
             self.logging()
@@ -92,10 +92,13 @@ class GeneratorOfReports(object):
                                       'end_report_period': self.end_report_period})
 
     def filename(self, file_format):
-        return "{date}_report_number_{num}_{uid}_{uuid4}{ext}".format(date=self.date,
-                                                                      num=str(self.report_number),
-                                                                      uid=str(self.user_id),
-                                                                      uuid4=self.uuid, ext=file_format)
+        return "{date}_start_date_{start_date}_end_date_{end_date}_report_number_{num}_{uid}_{uuid4}{ext}".format(
+            date=self.date,
+            start_date=self.start_report_period.strftime('%Y-%m-%d-%H-%M-%S'),
+            end_date=self.end_report_period.strftime('%Y-%m-%d-%H-%M-%S'),
+            num=str(self.report_number),
+            uid=str(self.user_id),
+            uuid4=self.uuid, ext=file_format)
 
     def report_1(self):
         for row in self.cursor:

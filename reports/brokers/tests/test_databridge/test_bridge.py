@@ -21,6 +21,7 @@ class TestBridgeWorker(BaseServersTest):
     def test_init(self):
         self.assertEqual(self.worker.database, config_get('database'))
         self.assertEqual(self.worker.delay, int(config_get('delay')))
+        self.assertEqual(self.worker.cleaner_delay, int(config_get('cleaner_delay')))
         self.assertEqual(self.worker.sleep_change_value.time_between_requests, 0)
         self.assertTrue(isinstance(self.worker.tenders_sync_client, TendersClientSync))
         self.assertTrue(isinstance(self.worker.client, TendersClient))

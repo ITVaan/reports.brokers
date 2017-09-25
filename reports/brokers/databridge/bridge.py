@@ -57,7 +57,7 @@ class DataBridge(object):
         ro_api_server = self.config_get('public_tenders_api_server') or api_server
         buffers_size = int(self.config_get('buffers_size')) or 500
         self.delay = int(self.config_get('delay')) or 15
-        self.cleaner_delay = int(self.config_get('cleaner_delay')) or 3600
+        self.cleaner_delay = int(self.config_get('cleaner_delay')) or 15
         self.increment_step = int(self.config_get('increment_step')) or 1
         self.decrement_step = int(self.config_get('decrement_step')) or 1
         self.sleep_change_value = APIRateController(self.increment_step, self.decrement_step)

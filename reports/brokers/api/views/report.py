@@ -19,14 +19,12 @@ class ReportView(object):
 
     @view_config(request_method='GET', permission='view')
     def generate(self):
-        # import pdb;pdb.set_trace()
         data = dict(self.request.GET)
         start_period = datetime.strptime(str(data['start_report_period']), '%d.%m.%Y')
         end_period = datetime.strptime(str(data['end_report_period']), '%d.%m.%Y')
         report_number = data['report_number']
         for file in os.listdir(self.REPORTS_PATH):
             if os.path.splitext(file)[1] == '.xlsx':
-                # import pdb;pdb.set_trace()
                 file_start_date = datetime.strptime(str(file.split('_start_date_')[1].split('_end_date_')[0]),
                                                     '%Y-%m-%d-%H-%M-%S')
                 file_end_date = datetime.strptime(str(file.split('_end_date_')[1].split('_report_number_')[0]),

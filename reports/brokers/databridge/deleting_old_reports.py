@@ -10,7 +10,7 @@ from reports.brokers.databridge.base_worker import BaseWorker
 
 
 class ReportCleaner(BaseWorker):
-    def __init__(self, services_not_available, result_dir, cleaner_delay):
+    def __init__(self, services_not_available, result_dir, cleaner_delay=15):
         super(ReportCleaner, self).__init__(services_not_available)
         self.start_time = datetime.now()
         self.cleaner_delay = cleaner_delay

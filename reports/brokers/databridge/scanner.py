@@ -110,16 +110,13 @@ class Scanner(BaseWorker):
         except Exception as e:
             logger.warning('Backward worker died!', extra=journal_context({"MESSAGE_ID": DATABRIDGE_WORKER_DIED}, {}))
             logger.exception("Message: {}".format(e.message))
-            return False
         else:
             logger.info('Backward data sync finished.')
-            return True
 
     def put_tenders_to_process(self, params, direction):
         for tender in self.get_tenders(params=params, direction=direction):
-            # logger.info('{} sync: Put tender {} to process...'.format(direction.capitalize(), tender['id']),
-            #             extra=journal_context({"MESSAGE_ID": DATABRIDGE_TENDER_PROCESS},
-            #                                   {"TENDER_ID": tender['id']}))
+            logger.debug('{} sync: Put tender {} to process...'.format(direction.capitalize(), tender['id']),
+                         extra=journal_context({"MESSAGE_ID": DATABRIDGE_TENDER_PROCESS}, {"TENDER_ID": tender['id']}))
             self.filtered_tender_ids_queue.put(tender['id'])
 
     def _start_jobs(self):

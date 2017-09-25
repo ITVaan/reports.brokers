@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-
 from gevent import monkey
-
 monkey.patch_all()
 
 import gevent
@@ -12,6 +10,7 @@ from gevent.queue import Queue
 from yaml import load as load_yaml
 from requests import RequestException
 
+from reports.brokers.databridge.utils import EdrDocument, TendererData
 from reports.brokers.databridge.base_worker import BaseWorker
 
 logger = logging.getLogger(__name__)
@@ -34,24 +33,34 @@ class DownloadFromDocServiceWorker(BaseWorker):
 
     def temp_action(self):
         data = self.items_to_download_queue.get()
-        document = self.try_to_get_data(data)
-        if document:
-            res_data = (data.tender_id, data.bid_id, document)
-            # TODO: won't go anywhere because putting into db is not ready yet:
-            self.edr_data_to_database.put(res_data)
-            logger.info("Have put item into database: {}_{}. Queue size: {}".format(data.tender_id, data.bid_id, self.edr_data_to_database.qsize()))
+        doc = self.try_to_get_and_parse_data_from_doc_service(data)
+        if doc is not None:
+            self.edr_data_to_database.put(TendererData(data.identifier, data.scheme, doc[0], doc[1]))
+            logger.info("Have put item into database: {}_{}. Queue size: {}".format(
+                data.tender_id, data.bid_id, self.edr_data_to_database.qsize()))
         else:
             self.retry_items_to_download_queue.put(data)
 
-    def try_to_get_data(self, data):
+    def try_to_get_and_parse_data_from_doc_service(self, data):
+        # type: (EdrDocument) -> (None | (None|int, str))
         try:
             res = self.doc_client.download(data.document_url)
-            raw = res.raw.read()
-            return load_yaml(raw)
+            edr_status, edr_date = self.parse_document(load_yaml(res))
+            return edr_status, edr_date
         except RequestException as e:
             logger.info("Exception happened while trying to download: {}".format(e))
         except Exception as e:
             logger.info("Unknown exception happened. {}".format(e))
+
+    def parse_document(self, edr_doc):
+        # type: (dict)->(int, str)
+        edr_status = None
+        if edr_doc.get("errors") and edr_doc.get("errors").get("error") == "Couldn't find this code in EDR.":
+            edr_status = 0
+        elif edr_doc.get("data") and edr_doc.get("data").get("registrationStatus") == "registered":
+            edr_status = 1
+        edr_date = edr_doc.get("meta").get("sourceDate")
+        return edr_status, edr_date
 
     def retry_get_item_from_doc_service(self):
         while not self.exit:
@@ -60,11 +69,12 @@ class DownloadFromDocServiceWorker(BaseWorker):
 
     def retry_temp_action(self):
         data = self.retry_items_to_download_queue.peek()
-        document = self.try_to_get_data(data)
-        if document:
-            res_data = (data.tender_id, data.bid_id, document)
-            self.edr_data_to_database.put(res_data)
+        doc = self.try_to_get_and_parse_data_from_doc_service(data)
+        if doc:
+            self.edr_data_to_database.put(TendererData(data.identifier, data.scheme, doc[0], doc[1]))
             self.retry_items_to_download_queue.get()
+            logger.info("Have put item into database: {}_{}. Queue size: {}".format(
+                data.tender_id, data.bid_id, self.retry_items_to_download_queue.qsize()))
         else:
             self.retry_items_to_download_queue.put(self.retry_items_to_download_queue.get())
 

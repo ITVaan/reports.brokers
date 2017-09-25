@@ -21,8 +21,8 @@ class DocServiceClient(object):
 
     @retry(stop_max_attempt_number=5, wait_exponential_multiplier=1)
     def download(self, url):
-        res = self.session.get(url=url, timeout=self.timeout, stream=True)
+        res = self.session.get(url=url, timeout=self.timeout)
         if res.status_code == 200:
-            return res
+            return res.content
         else:
             raise RequestException(res)

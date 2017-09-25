@@ -7,7 +7,8 @@ from restkit import ResourceError
 
 LOGGER = getLogger(__name__)
 
-EdrDocument = namedtuple("EdrDocument", ['tender_id', 'bid_id', 'document_url'])
+EdrDocument = namedtuple("EdrDocument", ['tender_id', 'bid_id', "identifier", "scheme", 'document_url'])
+TendererData = namedtuple("TendererData", ['identifier', 'scheme', 'edr_status', 'edr_date'])
 
 
 def journal_context(record={}, params={}):
@@ -25,8 +26,6 @@ def check_412(func):
         try:
             response = func(obj, *args, **kwargs)
         except ResourceError as re:
-            print("ERROR {}".format(re.__dict__))
-            print("ERROR RESPONSE {}".format(re.response.__dict__))
             if re.status_int == 412:
                 obj.headers['Cookie'] = re.response.headers['Set-Cookie']
                 response = func(obj, *args, **kwargs)
@@ -40,3 +39,8 @@ def check_412(func):
 def more_tenders(params, response):
     return not (params.get('descending')
                 and not len(response.data) and params.get('offset') == response.next_page.offset)
+
+
+def is_code_invalid(code):
+    return (not (type(code) == int or (type(code) == str and code.isdigit()) or
+                 (type(code) == unicode and code.isdigit())))

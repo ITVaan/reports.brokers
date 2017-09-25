@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 import hypothesis.strategies as st
 from hypothesis import assume, given
 from openpyxl import load_workbook
-
 from reports.brokers.api.selections import report1
 from reports.brokers.tests.base_db_test import BaseDbTestCase
 from reports.brokers.tests.utils import copy_xls_file_from_template, create_example_worksheet

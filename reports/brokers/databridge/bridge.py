@@ -2,7 +2,6 @@
 from ConfigParser import SafeConfigParser
 
 from gevent import monkey
-
 from reports.brokers.databridge.doc_service_client import DocServiceClient
 from reports.brokers.databridge.download_from_doc_service import DownloadFromDocServiceWorker
 
@@ -58,6 +57,7 @@ class DataBridge(object):
         ro_api_server = self.config_get('public_tenders_api_server') or api_server
         buffers_size = int(self.config_get('buffers_size')) or 500
         self.delay = int(self.config_get('delay')) or 15
+        self.cleaner_delay = int(self.config_get('cleaner_delay')) or 3600
         self.increment_step = int(self.config_get('increment_step')) or 1
         self.decrement_step = int(self.config_get('decrement_step')) or 1
         self.sleep_change_value = APIRateController(self.increment_step, self.decrement_step)
@@ -100,7 +100,8 @@ class DataBridge(object):
 
         self.report_cleaner = partial(ReportCleaner.spawn,
                                       services_not_available=self.services_not_available,
-                                      result_dir=self.result_dir)
+                                      result_dir=self.result_dir,
+                                      cleaner_delay=self.cleaner_delay)
 
         self.download_from_doc_service = partial(DownloadFromDocServiceWorker.spawn,
                                                  services_not_available=self.services_not_available,

@@ -32,7 +32,9 @@ class TestReportsDeleting(TestCase):
         for file in listdir(result_dir):
             if path.splitext(file)[1] == '.xlsx':
                 remove(path.abspath(path.join(result_dir, file)))
-        result_file = path.join(result_dir, '2017-08-05-17-00-00_report_number_1.xlsx')
+        date = '2017-05-02-13-00-00'
+        result_file = path.join(result_dir,
+                                '{}_start_date_{}_end_date_{}_report_number_1.xlsx'.format(date, date, date))
         open(result_file, 'a').close()
         worker = ReportCleaner.spawn(self.sna, result_dir)
         sleep(1)
